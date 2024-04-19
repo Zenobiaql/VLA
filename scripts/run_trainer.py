@@ -203,7 +203,6 @@ def main():
         tokenizer=tokenizer,
         dataset_text_field="text",
         data_collator=data_collator,
-        save_on_each_node=False,
         callbacks=[PrintCallback()],
         max_seq_length=training_args.max_seq_length,
         dataset_kwargs=training_args.dataset_kwargs,
