@@ -191,7 +191,7 @@ def main():
     ########################
 
     class PrintCallback(TrainerCallback):
-        def on_step_begin(self, args: transformers.TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs):
+        def on_evaluation(self, args: transformers.TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs):
             # print whether this process should save the checkpoint
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
 
