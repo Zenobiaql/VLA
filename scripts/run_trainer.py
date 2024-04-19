@@ -190,6 +190,11 @@ def main():
     # Initialize the Trainer
     ########################
 
+    class PrintCallback(TrainerCallback):
+        def on_step_begin(self, args: transformers.TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs):
+            # print whether this process should save the checkpoint
+            print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
+
     trainer = SFTTrainer(
         model=model,
         args=training_args,
@@ -199,6 +204,7 @@ def main():
         dataset_text_field="text",
         data_collator=data_collator,
         save_on_each_node=False,
+        callbacks=[PrintCallback()],
         max_seq_length=training_args.max_seq_length,
         dataset_kwargs=training_args.dataset_kwargs,
     )
