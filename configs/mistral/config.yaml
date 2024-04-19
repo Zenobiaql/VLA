@@ -14,7 +14,7 @@ num_input_frames: 6
 num_output_frames: 1
 
 # SFT trainer config
-deepspeed: recipes/VLA/mistral/ds_zero3.json
+deepspeed: configs/mistral/ds_zero3.json
 bf16: false
 fp16: true
 do_eval: true
@@ -30,8 +30,8 @@ logging_strategy: steps
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: -1
-num_train_epochs: 10
-output_dir: /mnt/data-rundong/VLA-experiments/Mistral-7B-2node
+num_train_epochs: 1000
+output_dir: /mnt/data-rundong/VLA-experiments/Mistral-7B-4nodes-32GPUs
 overwrite_output_dir: true
 per_device_eval_batch_size: 4
 per_device_train_batch_size: 4
