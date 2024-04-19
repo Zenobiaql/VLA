@@ -46,6 +46,9 @@ def main():
     except:
         pass
 
+    from huggingface_hub import login
+    login(token='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')
+
     parser = H4ArgumentParser((ModelArguments, DataArguments, SFTConfig))
     model_args, data_args, training_args = parser.parse()
 
@@ -106,6 +109,7 @@ def main():
 
     # only take a little samples for debug
     if training_args.debug:
+        print('Debug mode, only take a little samples for training and evaluation')
         train_dataset = train_dataset.select(range(2000))
         eval_dataset = eval_dataset.select(range(100))
     

@@ -18,28 +18,29 @@ deepspeed: configs/mistral/ds_zero3.json
 bf16: false
 fp16: true
 do_eval: true
-evaluation_strategy: epoch
+evaluation_strategy: steps
+eval_steps: 100
 gradient_accumulation_steps: 1
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
   use_reentrant: False
 learning_rate: 2.0e-05
 log_level: info
-logging_steps: 5  
 logging_strategy: steps
+logging_steps: 5  
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: -1
 num_train_epochs: 1000
-output_dir: data/Mistral-7B-4nodes-32GPUs
+output_dir: data/Mistral-7B/1node
 overwrite_output_dir: true
 per_device_eval_batch_size: 4
 per_device_train_batch_size: 4
 remove_unused_columns: true
 report_to:
 - tensorboard
-save_strategy: "epoch"
-save_steps: 1
+save_strategy: steps
+save_steps: 100
 save_total_limit: 1
 seed: 42
 warmup_ratio: 0.1
