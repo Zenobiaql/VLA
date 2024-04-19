@@ -1,0 +1,46 @@
+description: VLA-test
+env_defaults:
+  NODES: 4
+  GPUS: 8
+  MEM: 32
+
+target:
+  service: aml
+  name: diffusion
+
+storage:
+  my_output:
+    storage_account_name: azsussc
+    container_name: v-rundongluo
+    mount_dir: /mnt/data-rundong
+  data:
+    storage_account_name: azsussc
+    container_name: robotdata
+    mount_dir: /mnt/robotdata
+    is_output: false
+
+environment:
+  image: amlt-sing/ptca-1.13.1-cuda11.7
+  setup:
+    - pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu118
+    - git clone https://github.com/Red-Fairy/alignment-handbook.git && cd alignment-handbook/
+    - python -m pip install .
+
+code:
+  local_dir: $CONFIG_DIR/
+
+data:
+  storage_id: my_output
+
+jobs:
+  - name: run_parallel
+    sku: ${NODES}x${MEM}G${GPUS}-V100 #G1-V100
+    process_count_per_node: 1 # ${GPUS}
+    execution_mode: Basic
+    submit_args:
+      env:
+        AMLT_DOCKERFILE_TEMPLATE: default
+      container_args:
+        shm_size: 4096g
+    command:
+      - torchrun --nproc_per_node=$GPUS --nnode=$NODES --node_rank=$$AZUREML_CR_NODE_RANK --master_addr=$$AZ_BATCHAI_JOB_MASTER_NODE_IP --master_port=9901  scripts/run_trainer.py configs/mistral/config.yaml
