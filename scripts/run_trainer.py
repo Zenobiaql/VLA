@@ -125,7 +125,7 @@ def main():
         examples is a dict with the following keys:
         - text: text prompt of the manipulation task, in natural language
             since max sequence length is 2048+256=2304, its max number of tokens (for 4 input visuals + 4 output visuals)
-            2304 - 2 (start&end) - 12 (special tokens) - (4+4)*256 - (4+4)*7 = 
+            2304 - 2 (start&end) - 12 (special tokens) - (4+4)*256 - (4+4)*7 = 186
             (the begin of sequence token will be automatically added by the mistral tokenizer, but no for llama tokenizer)
         - task_description: task description in natural language
         - input_plan_description: input plan description in natural language
@@ -191,7 +191,7 @@ def main():
         model_args.model_name_or_path,
         **model_kwargs,
     )
-    model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # now we have 32000 + 2314 = 34314 tokens, pad to multiple of 128 to improve performance
+    model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
     # TODO: use pre-trained features to initialize the visual and action embeddings
 
     ########################
