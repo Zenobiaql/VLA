@@ -94,10 +94,10 @@ def main():
     num_added_visual_tokens = tokenizer.add_special_tokens({'additional_special_tokens': visual_tokens_to_add})
     num_added_action_tokens = tokenizer.add_special_tokens({'additional_special_tokens': action_tokens_to_add})
     special_tokens = ['<bot_i>', '<eot_i>', '<bov_i>', '<eov_i>', '<boa_i>', '<eoa_i>', 
-                            '<bov_o>', '<eov_o>', '<boa_o>', '<eoa_o>']
+                            '<eot_o>', '<bov_o>', '<bov_o>', '<eov_o>', '<boa_o>', '<eoa_o>']
     num_added_special_tokens = tokenizer.add_special_tokens({'additional_special_tokens': special_tokens})
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-    # For SFT training, padding should be on the right
+    # For SFT training, padding should be on the right (if overflow occurs)
     tokenizer.padding_side = data_args.padding_side
 
     #######################
@@ -106,6 +106,8 @@ def main():
 
     train_dataset = get_VLA_dataset(data_args, vocab_size, split='train')
     eval_dataset = get_VLA_dataset(data_args, vocab_size, split='test')
+
+    column_names = train_dataset.column_names
 
     # only take a little samples for debug
     if training_args.debug:
@@ -122,7 +124,12 @@ def main():
         Format the example into a sequence format
         examples is a dict with the following keys:
         - text: text prompt of the manipulation task, in natural language
-            since max sequence length is 2048, its max number of tokens is 2048 - 12 - 6*256 - 6*7 - 256 - 7 = 195
+            since max sequence length is 2048+256=2304, its max number of tokens (for 4 input visuals + 4 output visuals)
+            2304 - 2 (start&end) - 12 (special tokens) - (4+4)*256 - (4+4)*7 = 
+            (the begin of sequence token will be automatically added by the mistral tokenizer, but no for llama tokenizer)
+        - task_description: task description in natural language
+        - input_plan_description: input plan description in natural language
+        - output_plan_description: output plan description in natural language
         - input_visual: input visual tokens for the manipulation task, in token format, e.g., <v1> <v2> <v3>
         - input_action: input action tokens for the manipulation task, in token format
         - output_visual: output visual tokens for the manipulation task, in token format
@@ -134,9 +141,10 @@ def main():
                         boa_o + output_action + eoa_o + eos (padding will be automatically added later by the trainer)
         '''
         
-        example['text'] = '<bot_i>' + example['text'] + '<eot_i>' + \
+        example['text'] = '<bot_i>' + example['task_description'] + example['input_plan_description'] + '<eot_i>' + \
                     '<bov_i>' + ''.join(tokenizer.convert_ids_to_tokens(example['input_visual'])) + '<eov_i>' + \
                     '<boa_i>' + ''.join(tokenizer.convert_ids_to_tokens(example['input_action'])) + '<eoa_i>' + \
+                    '<bot_o>' + example['output_plan_description'] + '<eot_o>' + \
                     '<bov_o>' + ''.join(tokenizer.convert_ids_to_tokens(example['output_visual'])) + '<eov_o>' + \
                     '<boa_o>' + ''.join(tokenizer.convert_ids_to_tokens(example['output_action'])) + '<eoa_o>' + \
                     tokenizer.eos_token
@@ -146,13 +154,13 @@ def main():
     train_dataset = train_dataset.map(
         preprocess_func,
         num_proc=data_args.preprocessing_num_workers,
-        remove_columns=['input_visual', 'output_visual', 'input_action', 'output_action'],
+        remove_columns=column_names,
         desc="Preprocessing training dataset",
     )
     eval_dataset = eval_dataset.map(
         preprocess_func,
         num_proc=data_args.preprocessing_num_workers,
-        remove_columns=['input_visual', 'output_visual', 'input_action', 'output_action'],
+        remove_columns=column_names,
         desc="Preprocessing testing dataset",
     )
 
@@ -203,7 +211,7 @@ def main():
         tokenizer=tokenizer,
         dataset_text_field="text",
         data_collator=data_collator,
-        callbacks=[PrintCallback()],
+        callbacks=[PrintCallback()] if training_args.debug else None,
         max_seq_length=training_args.max_seq_length,
         dataset_kwargs=training_args.dataset_kwargs,
     )
