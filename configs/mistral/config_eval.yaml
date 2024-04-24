@@ -1,5 +1,5 @@
 # Model arguments
-model_name_or_path: data/Mistral-7B/checkpoint-680
+model_name_or_path: ../data-rundong/VLA-experiments/Mistral-7B-8nodes-zero3/checkpoint-32000
 base_model_name: mistralai/Mistral-7B-v0.1
 model_revision: main
 torch_dtype: float16
@@ -7,7 +7,7 @@ use_flash_attention_2: false
 
 # Data training arguments
 preprocessing_num_workers: 12
-data_root: /mnt/robotdata/bridge2_tokenized
+data_root: /mnt/robotdata/bridge2_tokenized_legacy
 padding_side: left
 num_visual_tokens: 16384
 num_action_tokens: 256
