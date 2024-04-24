@@ -85,7 +85,6 @@ def main():
     print('vocab_size', tokenizer.vocab_size)
     # print pad token id
     print('pad_token_id', tokenizer.pad_token_id)
-    exit()
 
     #######################
     # Load and pre-process the dataset
