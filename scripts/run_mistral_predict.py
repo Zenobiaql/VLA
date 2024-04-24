@@ -2,12 +2,14 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from alignment import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig
 from alignment import get_VLA_dataset_legacy
 import torch
+import json
 
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_name_or_path', type=str, default='../data-rundong/VLA-experiments/Mistral-7B-8nodes-zero3/checkpoint-32000')
 parser.add_argument('--base_model_name', type=str, default='mistralai/Mistral-7B-v0.1')
 parser.add_argument('--data_root', type=str, default='/mnt/robotdata/bridge2_tokenized_legacy')
+parser.add_argument('--output_dir', type=str, default='output')
 parser.add_argument('--num_visual_tokens', type=int, default=16384)
 parser.add_argument('--num_action_tokens', type=int, default=256)
 parser.add_argument('--num_input_frames', type=int, default=6)
@@ -69,6 +71,21 @@ def main():
 	out = tokenizer.batch_decode(generated_ids)[0]
 
 	print(out)
+
+	# save the generated text, visual and action tokens
+	result = {}
+	text = out.split('<eot_o>')[0].split('<bot_o>')[-1]
+	visual_raw = out.split('<eov_o>')[-1].split('<boa_o>')[0]
+	visuals = [int(v[2:]) for v in visual_raw.split('>')[:-1]]
+	action_raw = out.split('<eoa_o>')[-1].split('<eos>')[0]
+	actions = [int(v[2:]) for v in action_raw.split('>')[:-1]]
+	result['text'] = text
+	result['visuals'] = visuals
+	result['actions'] = actions
+	
+	# save
+	
+ 
 
 def generate_random_prompt():
 	# create 6*256 random visual tokens
