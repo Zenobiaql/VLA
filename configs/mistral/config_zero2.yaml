@@ -29,7 +29,7 @@ log_level: info
 logging_strategy: steps
 logging_steps: 5  
 lr_scheduler_type: cosine
-max_seq_length: 2048
+max_seq_length: 2394
 max_steps: -1
 num_train_epochs: 100
 output_dir: /mnt/data-rundong/VLA-experiments/Bridge2/Mistral-7B-zero2

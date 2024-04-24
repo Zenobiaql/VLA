@@ -1,6 +1,6 @@
 description: VLA-bridge2
 env_defaults:
-  NODES: 4
+  NODES: 8
   GPUS: 8
   MEM: 32
 
