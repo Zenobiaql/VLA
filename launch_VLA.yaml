@@ -1,6 +1,6 @@
-description: VLA-test
+description: VLA-bridge2
 env_defaults:
-  NODES: 4
+  NODES: 8
   GPUS: 8
   MEM: 32
 
@@ -33,7 +33,7 @@ data:
   storage_id: my_output
 
 jobs:
-  - name: run_parallel
+  - name: zero2
     sku: ${NODES}x${MEM}G${GPUS}-V100 #G1-V100
     process_count_per_node: 1 # ${GPUS}
     execution_mode: Basic
@@ -44,4 +44,18 @@ jobs:
         shm_size: 4096g
     command:
       - export $$HF_HOME=/mnt/data-rundong/huggingface
-      - torchrun --nproc_per_node=$GPUS --nnode=$NODES --node_rank=$$AZUREML_CR_NODE_RANK --master_addr=$$AZ_BATCHAI_JOB_MASTER_NODE_IP --master_port=9901  scripts/run_trainer.py configs/mistral/config.yaml
+      - torchrun --nproc_per_node=$GPUS --nnode=$NODES --node_rank=$$AZUREML_CR_NODE_RANK --master_addr=$$AZ_BATCHAI_JOB_MASTER_NODE_IP --master_port=9901  scripts/run_trainer.py configs/mistral/config_zero2.yaml
+
+  - name: zero3
+    sku: ${NODES}x${MEM}G${GPUS}-V100 #G1-V100
+    process_count_per_node: 1 # ${GPUS}
+    execution_mode: Basic
+    submit_args:
+      env:
+        AMLT_DOCKERFILE_TEMPLATE: default
+      container_args:
+        shm_size: 4096g
+    command:
+      - export $$HF_HOME=/mnt/data-rundong/huggingface
+      - torchrun --nproc_per_node=$GPUS --nnode=$NODES --node_rank=$$AZUREML_CR_NODE_RANK --master_addr=$$AZ_BATCHAI_JOB_MASTER_NODE_IP --master_port=9901  scripts/run_trainer.py configs/mistral/config_zero3.yaml
+
