@@ -10,8 +10,8 @@ data_root: /mnt/robotdata/bridge2_tokenized
 padding_side: left
 num_visual_tokens: 16384
 num_action_tokens: 256
-num_input_frames: 6
-num_output_frames: 1
+num_input_frames: 4
+num_output_frames: 4
 
 # SFT trainer config
 deepspeed: configs/mistral/ds_zero3.json
@@ -31,7 +31,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: -1
-num_train_epochs: 1000
+num_train_epochs: 100
 output_dir: /mnt/data-rundong/VLA-experiments/Bridge2/Mistral-7B-zero3
 overwrite_output_dir: true
 per_device_eval_batch_size: 3
@@ -41,7 +41,7 @@ report_to:
 - tensorboard
 save_strategy: steps
 save_steps: 500
-save_total_limit: 1
+save_total_limit: 2
 seed: 42
 warmup_ratio: 0.1
 save_on_each_node: false
