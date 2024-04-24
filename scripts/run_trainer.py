@@ -105,8 +105,9 @@ def main():
     #######################
 
     train_dataset = get_VLA_dataset(data_args, vocab_size, split='train')
-    eval_dataset = get_VLA_dataset(data_args, vocab_size, split='test')
-    # eval_dataset = eval_dataset.select(range(100))
+    # eval_dataset = get_VLA_dataset(data_args, vocab_size, split='test')
+    eval_dataset = get_VLA_dataset(data_args, vocab_size, split='train')
+    eval_dataset = eval_dataset.select(range(100))
 
     column_names = train_dataset.column_names
 

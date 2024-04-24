@@ -42,10 +42,7 @@ def main():
 		'''
 		example['text'] = '<bot_i>' + example['text'] + '<eot_i>' + \
 					'<bov_i>' + ''.join(tokenizer.convert_ids_to_tokens(example['input_visual'])) + '<eov_i>' + \
-					'<boa_i>' + ''.join(tokenizer.convert_ids_to_tokens(example['input_action'])) + '<eoa_i>' + \
-					'<bov_o>' + ''.join(tokenizer.convert_ids_to_tokens(example['output_visual'])) + '<eov_o>' + \
-					'<boa_o>' + ''.join(tokenizer.convert_ids_to_tokens(example['output_action'])) + '<eoa_o>' + \
-					tokenizer.eos_token
+					'<boa_i>' + ''.join(tokenizer.convert_ids_to_tokens(example['input_action'])) + '<eoa_i>' 
 
 		return example
 
@@ -68,7 +65,7 @@ def main():
 	# model_name_or_path = 'mistralai/Mistral-7B-v0.1'
 	model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path).to(device)
 
-	generated_ids = model.generate(**model_inputs, max_new_tokens=10000, do_sample=True)
+	generated_ids = model.generate(**model_inputs, max_new_tokens=2500, do_sample=True)
 	out = tokenizer.batch_decode(generated_ids)[0]
 
 	print(out)
