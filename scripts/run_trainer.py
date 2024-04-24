@@ -134,7 +134,7 @@ def main():
         - input_action: input action tokens for the manipulation task, in token format
         - output_visual: output visual tokens for the manipulation task, in token format
         - output_action: output action tokens for the manipulation task, in token format
-        sequence format: bos + bot_i + text + eot_i +
+        sequence format: bos (used for mistral, not used for phi) + bot_i + text + eot_i +
                         bov_i + input_visual + eov_i +
                         boa_i + input_action + eoa_i + 
                         bov_o + output_visual + eov_o +
