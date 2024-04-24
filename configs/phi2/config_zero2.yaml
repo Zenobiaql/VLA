@@ -14,7 +14,7 @@ num_input_frames: 4
 num_output_frames: 4
 
 # SFT trainer config
-deepspeed: configs/mistral/ds_zero2.json
+deepspeed: configs/deepspeed/ds_zero2.json
 bf16: false
 fp16: true
 do_eval: true
