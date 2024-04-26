@@ -29,13 +29,13 @@ log_level: info
 logging_strategy: steps
 logging_steps: 5  
 lr_scheduler_type: cosine
-max_seq_length: 2394
+max_seq_length: 3328
 max_steps: -1
 num_train_epochs: 100
 output_dir: /mnt/data-rundong/VLA-experiments/Bridge2/Mistral-7B-zero3-8nodes-v2
 overwrite_output_dir: true
-per_device_eval_batch_size: 3
-per_device_train_batch_size: 3
+per_device_eval_batch_size: 2
+per_device_train_batch_size: 
 remove_unused_columns: true
 report_to:
 - tensorboard
