@@ -1,4 +1,4 @@
-description: VLA-bridge2
+description: VLA Bridge2 Mistral-7B-zero3-8nodes
 env_defaults:
   NODES: 8
   GPUS: 8
@@ -54,7 +54,7 @@ jobs:
       env:
         AMLT_DOCKERFILE_TEMPLATE: default
       container_args:
-        shm_size: 4096g
+        shm_size: 8192g
     command:
       # - export $$HF_HOME=/mnt/data-rundong/huggingface
       - torchrun --nproc_per_node=$GPUS --nnode=$NODES --node_rank=$$AZUREML_CR_NODE_RANK --master_addr=$$AZ_BATCHAI_JOB_MASTER_NODE_IP --master_port=9901  scripts/run_trainer.py configs/mistral/config_zero3.yaml
