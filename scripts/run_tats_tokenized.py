@@ -83,18 +83,18 @@ def main():
     # Load tokenizer
     # The visual modality has 2048 (16384) tokens, and the action modality has 256 tokens, add them to the tokenizer
     # Add special tokens for the visual and action modalities, 
-    #     including <bot_i>, <eot_i>, <bov_i>, <eov_i>, <boa_i>, <eoa_i>, <bov_o>, <eov_o>, <boa_o>, <eoa_o>
-    # In total 2048 (16384) + 256 + 10 = 2314 (16650) tokens
+    #     including <bots_i>, <eots_i>, <botp_i>, <eotp_i>, <bov_i>, <eov_i>, <boa_i>, <eoa_i>,
+    #               <botp_o>, <eotp_o>, <bov_o>, <eov_o>, <boa_o>, <eoa_o>
+    # In total 16384 + vocab_size
     ################
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     vocab_size = len(tokenizer)
     # add eos token when when calling tokenizer
-    visual_tokens_to_add = ['<v' + str(i) + '>' for i in range(0, data_args.num_visual_tokens)]
-    action_tokens_to_add = ['<a' + str(i) + '>' for i in range(0, data_args.num_action_tokens)]
-    num_added_visual_tokens = tokenizer.add_special_tokens({'additional_special_tokens': visual_tokens_to_add})
-    num_added_action_tokens = tokenizer.add_special_tokens({'additional_special_tokens': action_tokens_to_add})
-    special_tokens = ['<bot_i>', '<eot_i>', '<bov_i>', '<eov_i>', '<boa_i>', '<eoa_i>', 
-                            '<eot_o>', '<bov_o>', '<bov_o>', '<eov_o>', '<boa_o>', '<eoa_o>']
+    visual_action_tokens_to_add = ['<va' + str(i) + '>' for i in range(0, data_args.num_visual_action_tokens)]
+    num_added_visual_action_tokens = tokenizer.add_special_tokens({'additional_special_tokens': visual_action_tokens_to_add})
+    special_tokens = ['<bots_i>', '<eots_i>', '<botp_i>', '<eotp_i>', # scene text and policy text
+                        '<bov_i>', '<eov_i>', '<boa_i>', '<eoa_i>', 
+                        '<botp_o>', '<eotp_o>', '<bov_o>', '<eov_o>', '<boa_o>', '<eoa_o>']
     num_added_special_tokens = tokenizer.add_special_tokens({'additional_special_tokens': special_tokens})
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
     # For SFT training, padding should be on the right (if overflow occurs)
@@ -106,10 +106,6 @@ def main():
 
     train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train')
     eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
-    # eval_dataset = get_VLA_dataset(data_args, vocab_size, split='train')
-    # eval_dataset = eval_dataset.select(range(100))
-
-    column_names = train_dataset.column_names
 
     # only take a little samples for debug
     if training_args.debug:

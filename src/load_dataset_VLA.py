@@ -6,7 +6,7 @@ import random
 import numpy as np
 import glob
 
-def VLA_dataset_generator(shards, eos_token):
+def VLA_dataset_generator(shards, eos_token, static_video_description):
     '''
     each shard is a jsonl file, with each line containing a json object
     the json object contains the following fields:
@@ -33,12 +33,20 @@ def VLA_dataset_generator(shards, eos_token):
             '<botp_o>' + data['output_clip_description'] + '<eotp_o>' + \
             '<bov_o>' + ''.join([f'<va{str(x)}>' for x in data['output_video_tokens']]) + '<eov_o>' + \
             '<boa_o>' + ''.join([f'<va{str(x)}>' for x in data['output_action_tokens']) + '<eoa_o>' + eos_token
+    length: 14 special tokens + 
+            768 * 2 video tokens +
+            42 * 2 action tokens +
+            200 task description, scene description, input clip, output clip
+            2 eos_token and bos_token (will be automatically added by the tokenizer)
+            thus, 2048 sequence length is enough
     '''
 
     for shard in shards:
         with open(shard, "r") as f:
             for line in f:
                 instance_data = json.loads(line)
+                if instance_data['input_clip_description'] == '': # sample a description for the input clip
+                    instance_data['input_clip_description'] = random.choice(static_video_description)
                 text = '<bots_i>' + instance_data['task_description'] + instance_data['scene_description'] + '<eots_i>' + \
                         '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>' + \
                         '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
@@ -52,5 +60,8 @@ def get_preprocessed_VLA_dataset(args, eos_token, split='train'):
     root = args.data_root
     shards = glob.glob(os.path.join(root, split, '*_stacked.jsonl'))
     shards = sorted(shards)
-    ds = IterableDataset(VLA_dataset_generator, gen_kwargs={"shards": shards, "eos_token": eos_token})
+    ds = IterableDataset(VLA_dataset_generator, gen_kwargs={"shards": shards, 
+                                                            "eos_token": eos_token,
+                                                            "static_video_description": args.static_video_description
+                                                            })
     return ds

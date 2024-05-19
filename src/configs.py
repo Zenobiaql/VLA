@@ -243,6 +243,11 @@ class DataArguments:
         default=2048,
         metadata={"help": ("The number of visual tokens to use for the model.")},
     )
+    # argument that accepts a list of strings
+    static_video_description: Optional[List[str]] = field(
+        default=[""],
+        metadata={"help": ("The static frame description.")},
+    )
 
 @dataclass
 class SFTConfig(transformers.TrainingArguments):
