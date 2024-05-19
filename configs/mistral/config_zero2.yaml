@@ -8,10 +8,9 @@ use_flash_attention_2: false
 preprocessing_num_workers: 12
 data_root: /mnt/robotdata/bridge2_tokenized
 padding_side: left
-num_visual_tokens: 16384
-num_action_tokens: 256
-num_input_frames: 4
-num_output_frames: 4
+num_visual_action_tokens: 16384
+static_frame_description:
+  - ""
 
 # SFT trainer config
 deepspeed: configs/deepspeed/ds_zero2.json
