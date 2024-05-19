@@ -97,8 +97,12 @@ def main():
 
     with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
         # take a sample from the dataset (iteratable)
-        for i, example in enumerate(train_dataset.take(3)):
-            logger.info(f"Sample {i}: {example['text']}")
+        if type(train_dataset) == datasets.IterableDataset:
+            for i, example in enumerate(train_dataset.take(3)):
+                logger.info(f"Sample {i}: {example['text']}")
+        else:
+            for i in range(3):
+                logger.info(f"Sample {i}: {train_dataset[i]}")
     
     # input always ends by <eoa_i>, use <eoa_i> as the response template
     response_template_id = tokenizer.convert_tokens_to_ids(['<eoa_i>'])
