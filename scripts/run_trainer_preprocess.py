@@ -27,8 +27,8 @@ import transformers
 from transformers import AutoModelForCausalLM, set_seed, MistralModel, PhiModel
 from transformers import TrainerCallback
 
-from alignment import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
-from alignment import get_VLA_dataset_processed as get_VLA_dataset
+from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
+from src import get_VLA_dataset_processed as get_VLA_dataset
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
