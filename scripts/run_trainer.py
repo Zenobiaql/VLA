@@ -1,6 +1,7 @@
 import logging
 import random
 import sys
+sys.path.append('.')
 
 import datasets
 import torch

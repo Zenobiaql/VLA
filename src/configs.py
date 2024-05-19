@@ -205,6 +205,11 @@ class DataArguments:
     """
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
+    dataset_type: str = field(
+        default='dataset',
+        metadata={"help": "The type of dataset to use for training.",
+                  "choices": ['dataset', 'iterable_dataset']}
+    )
     preprocessing_num_workers: Optional[int] = field(
         default=None,
         metadata={"help": ("The number of processes to use for data preprocessing.")},
@@ -245,8 +250,8 @@ class DataArguments:
     )
     # argument that accepts a list of strings
     static_video_description: Optional[List[str]] = field(
-        default=[""],
-        metadata={"help": ("The static frame description.")},
+        default_factory=lambda: [""],
+        metadata={"help": "The static frame description."}
     )
 
 @dataclass

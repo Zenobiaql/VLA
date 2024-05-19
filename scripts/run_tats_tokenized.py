@@ -1,22 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-# Copyright 2023 The HuggingFace Inc. team. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""
-Supervised fine-tuning script for decoder language models.
-"""
-
 import logging
 import random
 import sys
@@ -27,8 +8,9 @@ import transformers
 from transformers import AutoModelForCausalLM, set_seed, MistralModel, PhiModel
 from transformers import TrainerCallback
 
+sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
-from src import get_VLA_dataset_processed as get_VLA_dataset
+from src import get_VLA_dataset
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
@@ -114,8 +96,9 @@ def main():
         eval_dataset = eval_dataset.select(range(100))
 
     with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
-        index = random.randint(0, len(train_dataset))
-        logger.info(f"Sample {index} from the training set:\n\n{train_dataset[index]}")
+        # take a sample from the dataset (iteratable)
+        for i, example in enumerate(train_dataset.take(3)):
+            logger.info(f"Sample {i}: {example['text']}")
     
     # input always ends by <eoa_i>, use <eoa_i> as the response template
     response_template_id = tokenizer.convert_tokens_to_ids(['<eoa_i>'])

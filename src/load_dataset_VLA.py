@@ -1,6 +1,6 @@
 import json
 import os
-from datasets import Dataset, DatasetDict, IterableDataset
+from datasets import Dataset, DatasetDict, IterableDataset, Dataset
 from torch.utils.data import DataLoader
 import random
 import numpy as np
@@ -44,24 +44,34 @@ def VLA_dataset_generator(shards, eos_token, static_video_description):
     for shard in shards:
         with open(shard, "r") as f:
             for line in f:
-                instance_data = json.loads(line)
-                if instance_data['input_clip_description'] == '': # sample a description for the input clip
-                    instance_data['input_clip_description'] = random.choice(static_video_description)
-                text = '<bots_i>' + instance_data['task_description'] + instance_data['scene_description'] + '<eots_i>' + \
-                        '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>' + \
-                        '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
-                        '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>' + \
-                        '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>' + \
-                        '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>' + \
-                        '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + eos_token
+                try:
+                    instance_data = json.loads(line)
+                    if instance_data['input_clip_description'] == '': # sample a description for the input clip
+                        instance_data['input_clip_description'] = random.choice(static_video_description)
+                    text = '<bots_i>' + instance_data['task_description'] + instance_data['scene_description'] + '<eots_i>' + \
+                            '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>' + \
+                            '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
+                            '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>' + \
+                            '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>' + \
+                            '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>' + \
+                            '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + eos_token
+                except:
+                    continue
                 yield {"text": text}
 
-def get_preprocessed_VLA_dataset(args, eos_token, split='train'):
+def get_VLA_dataset(args, eos_token, split='train'):
     root = args.data_root
     shards = glob.glob(os.path.join(root, split, '*_stacked.jsonl'))
     shards = sorted(shards)
-    ds = IterableDataset(VLA_dataset_generator, gen_kwargs={"shards": shards, 
+    if args.dataset_type == 'dataset':
+        ds = Dataset.from_generator(VLA_dataset_generator, gen_kwargs={"shards": shards, 
                                                             "eos_token": eos_token,
                                                             "static_video_description": args.static_video_description
                                                             })
+    else: # iterable dataset
+        ds = IterableDataset.from_generator(VLA_dataset_generator, gen_kwargs={"shards": shards, 
+                                                                "eos_token": eos_token,
+                                                                "static_video_description": args.static_video_description
+                                                                })
+        ds.column_names = ['text']
     return ds

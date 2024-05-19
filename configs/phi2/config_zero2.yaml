@@ -6,11 +6,12 @@ use_flash_attention_2: false
 
 # Data training arguments
 preprocessing_num_workers: 12
-data_root: /mnt/robotdata/bridge2_tokenized
+data_root: /mnt/data-rundong/bridge2_processed/tokenized/
 padding_side: left
 num_visual_action_tokens: 16384
-static_frame_description:
+static_video_description:
   - ""
+dataset_type: dataset # or iterable_dataset
 
 # SFT trainer config
 deepspeed: configs/deepspeed/ds_zero2.json
