@@ -89,11 +89,27 @@ def main():
     train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train')
     eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
 
+    def preprocess_func(example):
+        example_new = {}
+        example_new['text'] = example['input'] + example['output']
+        return example_new
+
     # only take a little samples for debug
     if training_args.debug:
         print('Debug mode, only take a little samples for training and evaluation')
         train_dataset = train_dataset.select(range(2000))
         eval_dataset = eval_dataset.select(range(100))
+
+    train_dataset = eval_dataset.map(
+        preprocess_func,
+        num_proc=data_args.preprocessing_num_workers,
+        desc="Preprocessing testing dataset",
+    )
+    eval_dataset = eval_dataset.map(
+        preprocess_func,
+        num_proc=data_args.preprocessing_num_workers,
+        desc="Preprocessing testing dataset",
+    )
 
     with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
         # take a sample from the dataset (iteratable)
@@ -116,10 +132,10 @@ def main():
     torch_dtype = torch.float16 if training_args.fp16 else torch.float32
 
     model_kwargs = dict(
-        revision=model_args.model_revision,
-        trust_remote_code=model_args.trust_remote_code,
+        # revision=model_args.model_revision,
         use_flash_attention_2=model_args.use_flash_attention_2,
         torch_dtype=torch_dtype,
+        trust_remote_code=True,
         use_cache=False if training_args.gradient_checkpointing else True
     )
 
@@ -128,7 +144,6 @@ def main():
         **model_kwargs,
     )
     model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
-    # TODO: use pre-trained features to initialize the visual and action embeddings
 
     ########################
     # Initialize the Trainer

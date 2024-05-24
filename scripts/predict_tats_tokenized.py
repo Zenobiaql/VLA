@@ -66,8 +66,8 @@ def main():
     # Load tokenizer
     ################
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
-    vocab_size = len(transformers.AutoTokenizer.from_pretrained(model_args.base_model_name))
-    print('original_vocab_size', vocab_size)
+    # vocab_size = len(transformers.AutoTokenizer.from_pretrained(model_args.base_model_name))
+    # print('original_vocab_size', vocab_size)
     print('vocab_size', tokenizer.vocab_size)
     # print pad token id
     print('pad_token_id', tokenizer.pad_token_id)
@@ -76,38 +76,16 @@ def main():
     # Load and pre-process the dataset
     #######################
 
-    eval_dataset = get_VLA_dataset(data_args, vocab_size, split='test')
+    eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
 
-    def preprocess_func(example): 
-        '''
-        Format the example into a sequence format
-        examples is a dict with the following keys:
-        - text: text prompt of the manipulation task, in natural language
-            since max sequence length is 2048, its max number of tokens is 2048 - 12 - 6*256 - 6*7 - 256 - 7 = 195
-        - input_visual: input visual tokens for the manipulation task, in token format, e.g., <v1> <v2> <v3>
-        - input_action: input action tokens for the manipulation task, in token format
-        - output_visual: output visual tokens for the manipulation task, in token format
-        - output_action: output action tokens for the manipulation task, in token format
-        sequence format: bos + bot_i + text + eot_i +
-                        bov_i + input_visual + eov_i +
-                        boa_i + input_action + eoa_i + 
-                        bov_o + output_visual + eov_o +
-                        boa_o + output_action + eoa_o + eos (padding will be automatically added later by the trainer)
-        '''
-        
-        example['text'] = '<bot_i>' + example['text'] + '<eot_i>' + \
-                    '<bov_i>' + ''.join(tokenizer.convert_ids_to_tokens(example['input_visual'])) + '<eov_i>' + \
-                    '<boa_i>' + ''.join(tokenizer.convert_ids_to_tokens(example['input_action'])) + '<eoa_i>' + \
-                    '<bov_o>' + ''.join(tokenizer.convert_ids_to_tokens(example['output_visual'])) + '<eov_o>' + \
-                    '<boa_o>' + ''.join(tokenizer.convert_ids_to_tokens(example['output_action'])) + '<eoa_o>' + \
-                    tokenizer.eos_token
-
+    def preprocess_func(example):
+        example['text'] = example['input'] + example['output']
         return example
 
     eval_dataset = eval_dataset.map(
         preprocess_func,
         num_proc=data_args.preprocessing_num_workers,
-        remove_columns=['input_visual', 'output_visual', 'input_action', 'output_action'],
+        remove_columns=['input'], # keep the output column
         desc="Preprocessing testing dataset",
     )
 
@@ -123,10 +101,10 @@ def main():
     torch_dtype = torch.float16 if training_args.fp16 else torch.float32
 
     model_kwargs = dict(
-        revision=model_args.model_revision,
-        trust_remote_code=model_args.trust_remote_code,
+        # revision=model_args.model_revision,
         use_flash_attention_2=model_args.use_flash_attention_2,
         torch_dtype=torch_dtype,
+        trust_remote_code=True,
         use_cache=False if training_args.gradient_checkpointing else True
     )
 

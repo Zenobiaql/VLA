@@ -48,16 +48,16 @@ def VLA_dataset_generator(shards, eos_token, static_video_description):
                     instance_data = json.loads(line)
                     if instance_data['input_clip_description'] == '': # sample a description for the input clip
                         instance_data['input_clip_description'] = random.choice(static_video_description)
-                    text = '<bots_i>' + instance_data['task_description'] + instance_data['scene_description'] + '<eots_i>' + \
+                    text_input = '<bots_i>' + instance_data['task_description'] + instance_data['scene_description'] + '<eots_i>' + \
                             '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>' + \
                             '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
-                            '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>' + \
-                            '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>' + \
+                            '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
+                    text_output = '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>' + \
                             '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>' + \
                             '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + eos_token
                 except:
                     continue
-                yield {"text": text}
+                yield {"input": text_input, "output": text_output}
 
 def get_VLA_dataset(args, eos_token, split='train'):
     root = args.data_root
@@ -73,5 +73,5 @@ def get_VLA_dataset(args, eos_token, split='train'):
                                                                 "eos_token": eos_token,
                                                                 "static_video_description": args.static_video_description
                                                                 })
-        ds.column_names = ['text']
+        # ds.column_names = ['text']
     return ds
