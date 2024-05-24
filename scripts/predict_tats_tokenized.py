@@ -14,7 +14,7 @@ from transformers import TrainerCallback
 
 sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
-from src import get_VLA_dataset
+from src import get_VLA_dataset_debug as get_VLA_dataset
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
@@ -34,9 +34,6 @@ def main():
 
     parser = H4ArgumentParser((ModelArguments, DataArguments, SFTConfig))
     model_args, data_args, training_args = parser.parse()
-
-    # Set seed for reproducibility
-    set_seed(training_args.seed)
 
     ###############
     # Setup logging
@@ -111,7 +108,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         **model_kwargs,
-    )
+    ).to(training_args.device)
 
     ###############
     # Do prediction
@@ -123,7 +120,8 @@ def main():
         input_ids = tokenizer(input_text, return_tensors='pt').input_ids
         input_ids = input_ids.to(training_args.device)
         with torch.no_grad():
-            output = model.generate(input_ids, max_length=2048, num_beams=5, early_stopping=True)
+            # output = model.generate(input_ids, max_length=2048, num_beams=5, early_stopping=True, output_scores=True)
+            output = model.generate(input_ids, max_length=2048, num_beams=1, output_scores=True)
         output_text = tokenizer.decode(output[0], skip_special_tokens=False)
         print('output_text', output_text)
 

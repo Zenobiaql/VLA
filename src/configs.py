@@ -253,6 +253,7 @@ class DataArguments:
         default_factory=lambda: [""],
         metadata={"help": "The static frame description."}
     )
+    data_debug: bool = field(default=False, metadata={"help": "Debug mode for data loading."})
 
 @dataclass
 class SFTConfig(transformers.TrainingArguments):
