@@ -254,6 +254,10 @@ class DataArguments:
         metadata={"help": "The static frame description."}
     )
     data_debug: bool = field(default=False, metadata={"help": "Debug mode for data loading."})
+    save_prediction_path: Optional[str] = field(
+        default=None,
+        metadata={"help": "The path to save the predictions."}
+    )
 
 @dataclass
 class SFTConfig(transformers.TrainingArguments):

@@ -26,7 +26,8 @@ def VLA_dataset_generator(shards, eos_token, static_video_description):
     output:
     a generator that yields a dictionary with only the 'text' field
 
-    text = '<bots_i>' + data['task_description'] + data['scene_description'] + '<eots_i>' + \
+    text = '<bott_i>' + data['task_description'] + '<eott_i>' + \
+            '<bots_i>' + data['scene_description'] + '<eots_i>' + \
             '<botp_i>' + data['input_clip_description'] + '<eotp_i>' + \ 
             '<bov_i>' + ''.join([f'<va{str(x)}>' for x in data['input_video_tokens']]) + '<eov_i>' + \
             '<boa_i>' + ''.join([f'<va{str(x)}>' for x in data['input_action_tokens']]) + '<eoa_i>' + \

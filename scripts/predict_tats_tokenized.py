@@ -18,6 +18,7 @@ from src import get_VLA_dataset_debug as get_VLA_dataset
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +114,7 @@ def main():
     ###############
     # Do prediction
     ###############
+    f = open(data_args.save_prediction_path, 'w')
     for i in range(10):
         index = random.randint(0, len(eval_dataset))
         input_text = eval_dataset[index]['text']
@@ -123,7 +125,22 @@ def main():
             # output = model.generate(input_ids, max_length=2048, num_beams=5, early_stopping=True, output_scores=True)
             output = model.generate(input_ids, max_length=2048, num_beams=1, output_scores=True)
         output_text = tokenizer.decode(output[0], skip_special_tokens=False)
+        # save the output_text
+        ret = {}
+        ret['task_description'] = input_text.split('<eott_i>')[0].split('<bott_i>')[-1]
+        ret['scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
+        ret['input_clip_description'] = input_text.split('<eotp_i>')[0].split('<botp_i>')[-1]
+        ret['input_video_tokens'] = [x[:-1] for x in input_text.split('<eov_i>')[0].split('<bov_i>')[-1].split('<va')]
+        ret['input_action_tokens'] = [x[:-1] for x in input_text.split('<eoa_i>')[0].split('<boa_i>')[-1].split('<va')]
+        ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
+        ret['output_clip_description_gt'] = eval_dataset[index]['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
+        ret['output_video_tokens_pred'] = [x[:-1] for x in output_text.split('<eov_o>')[0].split('<bov_o>')[-1].split('<va')]
+        ret['output_video_tokens_gt'] = [x[:-1] for x in eval_dataset[index]['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va')]
+        ret['output_action_tokens_pred'] = [x[:-1] for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va')]
+        ret['output_action_tokens_gt'] = [x[:-1] for x in eval_dataset[index]['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va')]
         print('output_text', output_text)
+        # save as jsonl file
+        f.write(json.dumps(ret) + '\n')
 
 if __name__ == "__main__":
     main()
