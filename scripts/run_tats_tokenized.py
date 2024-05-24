@@ -73,10 +73,8 @@ def main():
     ################
     if model_args.disable_auto_config:
         if model_args.model_type == 'phi3':
-            configuration = Phi3Config.from_pretrained(model_args.model_name_or_path)
             tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
         elif model_args.model_type == 'mistral':
-            configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
             tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
     else:
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
@@ -154,15 +152,17 @@ def main():
 
     if model_args.disable_auto_config:
         if model_args.model_type == 'phi3':
-            model = Phi3ForCausalLM.from_pretrained(configuration, **model_kwargs)
+            # configuration = Phi3Config.from_pretrained()
+            model = Phi3ForCausalLM.from_pretrained(model_args.model_name_or_path, **model_kwargs)
         elif model_args.model_type == 'mistral':
-            model = MistralForCausalLM.from_pretrained(configuration, **model_kwargs)
+            # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
+            model = MistralForCausalLM.from_pretrained(model_args.model_name_or_path, **model_kwargs)
     else:
         model = AutoModelForCausalLM.from_pretrained(
             model_args.model_name_or_path,
             **model_kwargs,
         )
-        model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
+    model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 
     ########################
     # Initialize the Trainer
