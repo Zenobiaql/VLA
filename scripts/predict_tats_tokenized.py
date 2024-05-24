@@ -74,7 +74,7 @@ def main():
     # Load and pre-process the dataset
     #######################
 
-    eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
+    eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test', return_info=True)
 
     def preprocess_func(example):
         example['text'] = example['input'] + example['output']
@@ -127,17 +127,18 @@ def main():
         output_text = tokenizer.decode(output[0], skip_special_tokens=False)
         # save the output_text
         ret = {}
-        ret['task_description'] = input_text.split('<eott_i>')[0].split('<bott_i>')[-1]
-        ret['scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
+        # ret['task_description'] = input_text.split('<eott_i>')[0].split('<bott_i>')[-1]
+        # ret['scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
+        ret['task_scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
         ret['input_clip_description'] = input_text.split('<eotp_i>')[0].split('<botp_i>')[-1]
-        ret['input_video_tokens'] = [x[:-1] for x in input_text.split('<eov_i>')[0].split('<bov_i>')[-1].split('<va')]
-        ret['input_action_tokens'] = [x[:-1] for x in input_text.split('<eoa_i>')[0].split('<boa_i>')[-1].split('<va')]
+        ret['input_video_tokens'] = [int(x[:-1]) for x in input_text.split('<eov_i>')[0].split('<bov_i>')[-1].split('<va') if x != '']
+        ret['input_action_tokens'] = [int(x[:-1]) for x in input_text.split('<eoa_i>')[0].split('<boa_i>')[-1].split('<va') if x != '']
         ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
         ret['output_clip_description_gt'] = eval_dataset[index]['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
-        ret['output_video_tokens_pred'] = [x[:-1] for x in output_text.split('<eov_o>')[0].split('<bov_o>')[-1].split('<va')]
-        ret['output_video_tokens_gt'] = [x[:-1] for x in eval_dataset[index]['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va')]
-        ret['output_action_tokens_pred'] = [x[:-1] for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va')]
-        ret['output_action_tokens_gt'] = [x[:-1] for x in eval_dataset[index]['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va')]
+        ret['output_video_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
+        ret['output_video_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
+        ret['output_action_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
+        ret['output_action_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
         print('output_text', output_text)
         # save as jsonl file
         f.write(json.dumps(ret) + '\n')

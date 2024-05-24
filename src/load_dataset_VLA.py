@@ -6,7 +6,7 @@ import random
 import numpy as np
 import glob
 
-def VLA_dataset_generator(shards, eos_token, static_video_description):
+def VLA_dataset_generator(shards, eos_token, static_video_description, return_info):
     '''
     each shard is a jsonl file, with each line containing a json object
     the json object contains the following fields:
@@ -59,9 +59,12 @@ def VLA_dataset_generator(shards, eos_token, static_video_description):
                             '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + eos_token
                 except:
                     continue
-                yield {"input": text_input, "output": text_output}
+                if return_info:
+                    yield {"input": text_input, "output": text_output, "trajectory_id": instance_data['trajectory_id'], "view": instance_data['view']}
+                else:
+                    yield {"input": text_input, "output": text_output}
 
-def get_VLA_dataset(args, eos_token, split='train'):
+def get_VLA_dataset(args, eos_token, split='train', return_info=False):
     root = args.data_root
     shards = glob.glob(os.path.join(root, split, '*_stacked.jsonl'))
     shards = sorted(shards)
@@ -70,12 +73,14 @@ def get_VLA_dataset(args, eos_token, split='train'):
     if args.dataset_type == 'dataset':
         ds = Dataset.from_generator(VLA_dataset_generator, gen_kwargs={"shards": shards, 
                                                             "eos_token": eos_token,
-                                                            "static_video_description": args.static_video_description
+                                                            "static_video_description": args.static_video_description,
+                                                            "return_info": return_info
                                                             })
     else: # iterable dataset
         ds = IterableDataset.from_generator(VLA_dataset_generator, gen_kwargs={"shards": shards, 
                                                                 "eos_token": eos_token,
-                                                                "static_video_description": args.static_video_description
+                                                                "static_video_description": args.static_video_description,
+                                                                "return_info": return_info
                                                                 })
         # ds.column_names = ['text']
     return ds
