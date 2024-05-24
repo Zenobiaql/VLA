@@ -8,7 +8,7 @@ import transformers
 from transformers import AutoModelForCausalLM, set_seed, MistralModel, PhiModel
 from transformers import TrainerCallback
 from transformers import Phi3Config, Phi3ForCausalLM, LlamaTokenizer
-from transformers import MistralConfig, MistralForCausalLM, MistralTokenizer
+from transformers import MistralConfig, MistralForCausalLM
 
 sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets

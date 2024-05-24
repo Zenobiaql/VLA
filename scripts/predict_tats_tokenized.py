@@ -139,6 +139,8 @@ def main():
         ret['output_video_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
         ret['output_action_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
         ret['output_action_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
+        ret['trajectory_id'] = eval_dataset[index]['trajectory_id']
+        ret['view'] = eval_dataset[index]['view']
         print('output_text', output_text)
         # save as jsonl file
         f.write(json.dumps(ret) + '\n')
