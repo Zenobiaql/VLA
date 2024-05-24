@@ -72,9 +72,9 @@ def main():
     # In total 16384 + vocab_size
     ################
     if model_args.disable_auto_config:
-        if model_args.model_type == 'phi3':
-            tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
-        elif model_args.model_type == 'mistral':
+        # if model_args.model_type == 'phi3':
+        #     tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
+        # elif model_args.model_type == 'mistral':
             tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
     else:
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
@@ -146,7 +146,7 @@ def main():
         # revision=model_args.model_revision,
         use_flash_attention_2=model_args.use_flash_attention_2,
         torch_dtype=torch_dtype,
-        trust_remote_code=True,
+        # trust_remote_code=True,
         use_cache=False if training_args.gradient_checkpointing else True
     )
 
