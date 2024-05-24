@@ -71,7 +71,15 @@ def main():
     #               <botp_o>, <eotp_o>, <bov_o>, <eov_o>, <boa_o>, <eoa_o>
     # In total 16384 + vocab_size
     ################
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
+    if model_args.disable_auto_config:
+        if model_args.model_type == 'phi3':
+            configuration = Phi3Config.from_pretrained(model_args.model_name_or_path)
+            tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
+        elif model_args.model_type == 'mistral':
+            configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
+            tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
+    else:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     vocab_size = len(tokenizer)
     # add eos token when when calling tokenizer
     visual_action_tokens_to_add = ['<va' + str(i) + '>' for i in range(0, data_args.num_visual_action_tokens)]
@@ -144,11 +152,17 @@ def main():
         use_cache=False if training_args.gradient_checkpointing else True
     )
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_args.model_name_or_path,
-        **model_kwargs,
-    )
-    model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
+    if model_args.disable_auto_config:
+        if model_args.model_type == 'phi3':
+            model = Phi3ForCausalLM.from_pretrained(configuration, **model_kwargs)
+        elif model_args.model_type == 'mistral':
+            model = MistralForCausalLM.from_pretrained(configuration, **model_kwargs)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            **model_kwargs,
+        )
+        model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 
     ########################
     # Initialize the Trainer

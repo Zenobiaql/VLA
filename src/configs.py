@@ -194,6 +194,10 @@ class ModelArguments:
         default="nf4", metadata={"help": "precise the quantization type (fp4 or nf4)"}
     )
     use_bnb_nested_quant: bool = field(default=False, metadata={"help": "use nested quantization"})
+    disable_auto_config: bool = field(default=False, metadata={"help": "Disable auto config."})
+    model_type: Optional[str] = field(default="mistral", 
+        metadata={"help": "The model type.", "choices": ["mistral", "phi3"],
+        })
 
     def __post_init__(self):
         if self.load_in_8bit and self.load_in_4bit:
@@ -258,6 +262,7 @@ class DataArguments:
         default=None,
         metadata={"help": "The path to save the predictions."}
     )
+
 
 @dataclass
 class SFTConfig(transformers.TrainingArguments):
