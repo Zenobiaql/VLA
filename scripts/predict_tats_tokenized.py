@@ -34,6 +34,7 @@ def main():
     print('vocab_size', tokenizer.vocab_size)
     # print pad token id
     print('pad_token_id', tokenizer.pad_token_id)
+    tokenizer.padding_side = data_args.padding_side
 
     #######################
     # Load and pre-process the dataset
@@ -76,8 +77,6 @@ def main():
     ).to(device)
     model.eval()
     streamer = TextStreamer(tokenizer)
-
-    time.sleep(100)
 
     ###############
     # Do prediction
