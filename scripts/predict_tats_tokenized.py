@@ -126,7 +126,7 @@ def main():
         start_time = time.time()
         with torch.no_grad():
             # output = model.generate(input_ids, max_length=2048, num_beams=5, early_stopping=True, output_scores=True)
-            output = model.generate(input_ids, max_length=2048, num_beams=1, output_scores=True)
+            output = model.generate(input_ids, max_length=2048, num_beams=1, output_scores=True, pad_token_id=tokenizer.pad_token_id)
         print('generate time', time.time() - start_time)
         output_text = tokenizer.decode(output[0], skip_special_tokens=False)
         # save the output_text
