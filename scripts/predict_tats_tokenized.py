@@ -14,11 +14,12 @@ from transformers import TrainerCallback
 
 sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
-from src import get_VLA_dataset_debug as get_VLA_dataset
+from src import get_VLA_dataset
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
 import json
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +115,7 @@ def main():
     ###############
     # Do prediction
     ###############
+    os.makedirs(os.path.dirname(data_args.save_prediction_path), exist_ok=True)
     f = open(data_args.save_prediction_path, 'w')
     for i in range(10):
         index = random.randint(0, len(eval_dataset))
@@ -121,15 +123,17 @@ def main():
         print('input_text', input_text)
         input_ids = tokenizer(input_text, return_tensors='pt').input_ids
         input_ids = input_ids.to(training_args.device)
+        start_time = time.time()
         with torch.no_grad():
             # output = model.generate(input_ids, max_length=2048, num_beams=5, early_stopping=True, output_scores=True)
             output = model.generate(input_ids, max_length=2048, num_beams=1, output_scores=True)
+        print('generate time', time.time() - start_time)
         output_text = tokenizer.decode(output[0], skip_special_tokens=False)
         # save the output_text
         ret = {}
-        # ret['task_description'] = input_text.split('<eott_i>')[0].split('<bott_i>')[-1]
-        # ret['scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
-        ret['task_scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
+        ret['task_description'] = input_text.split('<eott_i>')[0].split('<bott_i>')[-1]
+        ret['scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
+        # ret['task_scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
         ret['input_clip_description'] = input_text.split('<eotp_i>')[0].split('<botp_i>')[-1]
 
         ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
