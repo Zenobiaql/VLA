@@ -96,8 +96,8 @@ class H4ArgumentParser(HfArgumentParser):
             # let's parse it to get our arguments.
             output = self.parse_yaml_file(os.path.abspath(sys.argv[1]))
         # parse command line args and yaml file
-        elif len(sys.argv) > 2 and sys.argv[1].endswith(".yaml"):
-            output = self.parse_yaml_and_args(os.path.abspath(sys.argv[1]), sys.argv[2:])
+        elif len(sys.argv) > 2 and sys.argv[-1].endswith(".yaml"):
+            output = self.parse_yaml_and_args(os.path.abspath(sys.argv[-1]), sys.argv[1:-1])
         # elif len(sys.argv) > 2 and sys.argv[1].endswith(".yaml"):
         #     output = self.parse_yaml_and_args(os.path.abspath(sys.argv[1]), sys.argv[2:])
         # parse command line args only
@@ -262,6 +262,7 @@ class DataArguments:
         default=None,
         metadata={"help": "The path to save the predictions."}
     )
+    action_before_vision: bool = field(default=False, metadata={"help": "Whether to use vision before action."})
 
 
 @dataclass
