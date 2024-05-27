@@ -90,7 +90,6 @@ def main():
         # print('input_text', input_text)
         input_ids = tokenizer(input_text, return_tensors='pt').input_ids
         input_ids = input_ids.to(device)
-        sleep(100)
         start_time = time.time()
         with torch.no_grad():
             # output = model.generate(input_ids, max_length=2048, num_beams=5, early_stopping=True, output_scores=True)
