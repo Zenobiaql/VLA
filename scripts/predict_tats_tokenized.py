@@ -138,6 +138,7 @@ def main():
 
         ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
         ret['output_clip_description_gt'] = eval_dataset[index]['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
+        ret['output_clip_description_value_gt'] = eval_dataset[index]['gt_actions']
 
         ret['trajectory_id'] = eval_dataset[index]['trajectory_id']
         ret['view'] = eval_dataset[index]['view']

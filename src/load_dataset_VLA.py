@@ -60,7 +60,9 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                 except:
                     continue
                 if return_info:
-                    yield {"input": text_input, "output": text_output, "trajectory_id": instance_data['trajectory_id'], "view": instance_data['view']}
+                    yield {"input": text_input, "output": text_output, 
+                           "trajectory_id": instance_data['trajectory_id'], "view": instance_data['view'],
+                           "gt_actions": instance_data['gt_actions']}
                 else:
                     yield {"input": text_input, "output": text_output}
 
