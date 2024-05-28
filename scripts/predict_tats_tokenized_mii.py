@@ -15,37 +15,19 @@ import json
 import time
 import mii
 
-logger = logging.getLogger(__name__)
-
 def main():
 
     parser = H4ArgumentParser((ModelArguments, DataArguments))
     model_args, data_args = parser.parse()
 
-    ###############
-    # Setup logging
-    ###############
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[logging.StreamHandler(sys.stdout)],
-    )
-    # Log on each process a small summary
-    logger.info(f"Model parameters {model_args}")
-    logger.info(f"Data parameters {data_args}")
-
-    ################
-    # Load tokenizer
-    ################
+    # Load tokenizer and define pipeline
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     print('vocab_size', tokenizer.vocab_size)
     print('pad_token_id', tokenizer.pad_token_id)
 
     pipe = mii.pipeline(model_args.model_name_or_path)
-
-    #######################
+    
     # Load and pre-process the dataset
-    #######################
     eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test', return_info=True)
 
     def preprocess_func(example):
@@ -59,12 +41,10 @@ def main():
         desc="Preprocessing testing dataset",
     )
 
-    ###############
     # Do prediction
-    ###############
     local_rank = int(os.getenv("LOCAL_RANK", "0"))
-    os.makedirs(os.path.dirname(data_args.save_prediction_path), exist_ok=True)
-    f = open(data_args.save_prediction_path, 'a')
+    os.makedirs(os.path.join(data_args.model_name_or_path, 'predictions'), exist_ok=True)
+    f = open(os.path.join(data_args.model_name_or_path, 'predictions', 'results.jsonl'), 'a')
 
     for sample in eval_dataset:
         input_text = sample['text']
