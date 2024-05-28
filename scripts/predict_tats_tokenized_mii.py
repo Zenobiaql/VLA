@@ -46,7 +46,6 @@ def main():
     logger.info(f"Model parameters {model_args}")
     logger.info(f"Data parameters {data_args}")
 
-
     ################
     # Load tokenizer
     ################
@@ -81,11 +80,14 @@ def main():
     for i in range(10):
         index = random.randint(0, len(eval_dataset))
         input_text = eval_dataset[index]['text']
+        print('input_text', input_text)
         
         start_time = time.time()
         
-        output = pipe([input_text], max_length=1024)
+        output = pipe([input_text], max_new_tokens=1024)
+        print(output)
         output_text = output[0].generated_text
+        print('output_text', output_text)
 
         print('generate time', time.time() - start_time)
 
