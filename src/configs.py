@@ -263,6 +263,8 @@ class DataArguments:
         metadata={"help": "The path to save the predictions."}
     )
     action_before_vision: bool = field(default=False, metadata={"help": "Whether to use vision before action."})
+    start_idx: Optional[int] = field(default=0, metadata={"help": "The start index for the dataset."})
+    end_idx: Optional[int] = field(default=None, metadata={"help": "The end index for the dataset."})
 
 
 @dataclass

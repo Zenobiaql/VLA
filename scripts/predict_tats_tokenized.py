@@ -76,16 +76,15 @@ def main():
         **model_kwargs,
     ).to(device)
     model.eval()
-    streamer = TextStreamer(tokenizer)
+    # streamer = TextStreamer(tokenizer)
 
     ###############
     # Do prediction
     ###############
     os.makedirs(os.path.dirname(data_args.save_prediction_path), exist_ok=True)
-    f = open(data_args.save_prediction_path, 'w')
-    for i in range(10):
-        index = random.randint(0, len(eval_dataset))
-        input_text = eval_dataset[index]['text']
+    f = open(data_args.save_prediction_path, 'a')
+    for sample in eval_dataset:
+        input_text = sample['text']
         # print('input_text', input_text)
         input_ids = tokenizer(input_text, return_tensors='pt').input_ids
         input_ids = input_ids.to(device)
@@ -94,7 +93,7 @@ def main():
             # output = model.generate(input_ids, max_length=2048, num_beams=5, early_stopping=True, output_scores=True)
             output = model.generate(input_ids, max_length=2048, num_beams=1, 
                                     pad_token_id=tokenizer.pad_token_id, eos_token_id=tokenizer.eos_token_id,
-                                    streamer=streamer
+                                    # streamer=streamer
                                     )
         print('generate time', time.time() - start_time)
         output_text = tokenizer.decode(output[0], skip_special_tokens=False)
@@ -106,21 +105,21 @@ def main():
         ret['input_clip_description'] = input_text.split('<eotp_i>')[0].split('<botp_i>')[-1]
 
         ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
-        ret['output_clip_description_gt'] = eval_dataset[index]['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
-        ret['output_clip_description_value_gt'] = eval_dataset[index]['gt_actions']
+        ret['output_clip_description_gt'] = sample['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
+        ret['output_clip_description_value_gt'] = sample['gt_actions']
 
-        ret['trajectory_id'] = eval_dataset[index]['trajectory_id']
-        ret['view'] = eval_dataset[index]['view']
+        ret['trajectory_id'] = sample['trajectory_id']
+        ret['view'] = sample['view']
 
         ret['identical_token_ratio_video'], ret['identical_token_ratio_action'] = 0, 0
 
         ret['input_video_tokens'] = [int(x[:-1]) for x in input_text.split('<eov_i>')[0].split('<bov_i>')[-1].split('<va') if x != '']
         ret['output_video_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
-        ret['output_video_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
+        ret['output_video_tokens_gt'] = [int(x[:-1]) for x in sample['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
 
         ret['input_action_tokens'] = [int(x[:-1]) for x in input_text.split('<eoa_i>')[0].split('<boa_i>')[-1].split('<va') if x != '']
         ret['output_action_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
-        ret['output_action_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
+        ret['output_action_tokens_gt'] = [int(x[:-1]) for x in sample['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
 
         # print the ratio of identical tokens
         num_identical_tokens = 0

@@ -23,6 +23,7 @@ import time
 from transformers.integrations import HfDeepSpeedConfig
 import deepspeed
 from transformers import TextStreamer
+from transformers import pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -61,70 +62,20 @@ def main():
     torch.cuda.set_device(local_rank)
     deepspeed.init_distributed()
 
+    generator = pipeline('text-generation', 
+                         model=model_args.model_name_or_path, 
+                         device=local_rank)
+    generator.model = deepspeed.init_inference(generator.model, 
+                                               tensor_parallel={"tp_size": world_size},
+                                               dtype=torch.float16, 
+                                               replace_with_kernel_inject=True)
+
     ################
     # Load tokenizer
     ################
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     print('vocab_size', tokenizer.vocab_size)
     print('pad_token_id', tokenizer.pad_token_id)
-
-    #######################
-    # Load pretrained model
-    #######################
-    logger.info("*** Load pretrained model ***")
-    # use float16 (V100 does not support bfloat16)
-    torch_dtype = torch.float16
-
-    model_kwargs = dict(
-        # revision=model_args.model_revision,
-        use_flash_attention_2=model_args.use_flash_attention_2,
-        torch_dtype=torch_dtype,
-        # trust_remote_code=True,
-        # use_cache=True
-    )
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_args.model_name_or_path,
-        **model_kwargs,
-    )
-    model.eval()
-
-    gradient_accumulation_steps = 1
-    micro_batch_size_per_gpu = 1
-    batch_size = gradient_accumulation_steps * micro_batch_size_per_gpu * world_size
-    ds_config = {
-        "fp16": {
-            "enabled": True
-        },
-        "bf16": {
-            "enabled": False
-        },
-        "zero_optimization": {
-            "stage": 3,
-            # "offload_param": {
-            #     "device": "cpu",
-            #     "pin_memory": True
-            # },
-            "overlap_comm": True,
-            "contiguous_gradients": True,
-            "reduce_bucket_size": 2e8,
-            "stage3_prefetch_bucket_size": 2e8,
-            "stage3_param_persistence_threshold": 1e8,
-        },
-        "gradient_accumulation_steps": gradient_accumulation_steps,
-        "steps_per_print": 2000,
-        "train_batch_size": batch_size,
-        "train_micro_batch_size_per_gpu": micro_batch_size_per_gpu,
-        "wall_clock_breakdown": False
-    }
-    dschf = HfDeepSpeedConfig(ds_config)
-
-    ds_engine = deepspeed.initialize(model=model, config_params=ds_config)[0]
-    # ds_engine = deepspeed.init_inference(model, dtype=torch_dtype, 
-    #                                      tensor_parallel={"tp_size": 1},
-    #                                      replace_with_kernel_inject=True)
-    ds_engine.module.eval()  # inference
-    # streamer = TextStreamer(tokenizer)
 
     #######################
     # Load and pre-process the dataset
@@ -142,7 +93,7 @@ def main():
         desc="Preprocessing testing dataset",
     )
 
-    if local_rank == 0:
+    if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
         index = random.randint(0, len(eval_dataset))
         logger.info(f"Sample {index} from the training set:\n\n{eval_dataset[index]}")
 
@@ -151,60 +102,61 @@ def main():
     ###############
     os.makedirs(os.path.dirname(data_args.save_prediction_path), exist_ok=True)
     f = open(data_args.save_prediction_path, 'a')
-    for i in range(10):
-        index = random.randint(0, len(eval_dataset))
-        input_text = eval_dataset[index]['text']
-        print('input_text', input_text)
-        input_ids = tokenizer.encode(input_text, return_tensors='pt').to(device=local_rank)
-        start_time = time.time()
-        with torch.no_grad():
-            output = ds_engine.module.generate(input_ids, max_length=2048, num_beams=1,
-                                               pad_token_id=tokenizer.pad_token_id, eos_token_id=tokenizer.eos_token_id,
-                                               synced_gpus=True)
-        
-        output_text = tokenizer.decode(output[0], skip_special_tokens=False)
-        if local_rank == 0:
-            print('generate time', time.time() - start_time)
-            print(output_text)
-            # save the output_text
-            ret = {}
-            ret['task_description'] = input_text.split('<eott_i>')[0].split('<bott_i>')[-1]
-            ret['scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
-            # ret['task_scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
-            ret['input_clip_description'] = input_text.split('<eotp_i>')[0].split('<botp_i>')[-1]
+    
+    index = 0
+    index = random.randint(0, len(eval_dataset))
+    input_text = eval_dataset[index]['text']
 
-            ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
-            ret['output_clip_description_gt'] = eval_dataset[index]['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
-            ret['output_clip_description_value_gt'] = eval_dataset[index]['gt_actions']
+    if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
+        print('input_text:', input_text)
 
-            ret['trajectory_id'] = eval_dataset[index]['trajectory_id']
-            ret['view'] = eval_dataset[index]['view']
+    start_time = time.time()
+    output = generator(input_text, max_length=2048, num_beams=1)
+    output_text = output[0]['generated_text']
+    
+    # output_text = tokenizer.decode(output[0], skip_special_tokens=False)
+    if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
+        print('generate time', time.time() - start_time)
+        print(output_text)
+        # save the output_text
+        ret = {}
+        ret['task_description'] = input_text.split('<eott_i>')[0].split('<bott_i>')[-1]
+        ret['scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
+        # ret['task_scene_description'] = input_text.split('<eots_i>')[0].split('<bots_i>')[-1]
+        ret['input_clip_description'] = input_text.split('<eotp_i>')[0].split('<botp_i>')[-1]
 
-            ret['identical_token_ratio_video'], ret['identical_token_ratio_action'] = 0, 0
+        ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
+        ret['output_clip_description_gt'] = eval_dataset[index]['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
+        ret['output_clip_description_value_gt'] = eval_dataset[index]['gt_actions']
 
-            ret['input_video_tokens'] = [int(x[:-1]) for x in input_text.split('<eov_i>')[0].split('<bov_i>')[-1].split('<va') if x != '']
-            ret['output_video_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
-            ret['output_video_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
+        ret['trajectory_id'] = eval_dataset[index]['trajectory_id']
+        ret['view'] = eval_dataset[index]['view']
 
-            ret['input_action_tokens'] = [int(x[:-1]) for x in input_text.split('<eoa_i>')[0].split('<boa_i>')[-1].split('<va') if x != '']
-            ret['output_action_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
-            ret['output_action_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
+        ret['identical_token_ratio_video'], ret['identical_token_ratio_action'] = 0, 0
 
-            # print the ratio of identical tokens
-            num_identical_tokens = 0
-            for token_pred, token_gt in zip(ret['output_video_tokens_pred'], ret['output_video_tokens_gt']):
-                if token_pred == token_gt:
-                    num_identical_tokens += 1
-            ret['identical_token_ratio_video'] = num_identical_tokens / len(ret['output_video_tokens_gt'])
-            num_identical_tokens = 0
-            for token_pred, token_gt in zip(ret['output_action_tokens_pred'], ret['output_action_tokens_gt']):
-                if token_pred == token_gt:
-                    num_identical_tokens += 1
-            ret['identical_token_ratio_action'] = num_identical_tokens / len(ret['output_action_tokens_gt'])
+        ret['input_video_tokens'] = [int(x[:-1]) for x in input_text.split('<eov_i>')[0].split('<bov_i>')[-1].split('<va') if x != '']
+        ret['output_video_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
+        ret['output_video_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eov_o>')[0].split('<bov_o>')[-1].split('<va') if x != '']
 
-            # print('output_text', output_text)
-            # save as jsonl file
-            f.write(json.dumps(ret) + '\n')
+        ret['input_action_tokens'] = [int(x[:-1]) for x in input_text.split('<eoa_i>')[0].split('<boa_i>')[-1].split('<va') if x != '']
+        ret['output_action_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
+        ret['output_action_tokens_gt'] = [int(x[:-1]) for x in eval_dataset[index]['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
+
+        # print the ratio of identical tokens
+        num_identical_tokens = 0
+        for token_pred, token_gt in zip(ret['output_video_tokens_pred'], ret['output_video_tokens_gt']):
+            if token_pred == token_gt:
+                num_identical_tokens += 1
+        ret['identical_token_ratio_video'] = num_identical_tokens / len(ret['output_video_tokens_gt'])
+        num_identical_tokens = 0
+        for token_pred, token_gt in zip(ret['output_action_tokens_pred'], ret['output_action_tokens_gt']):
+            if token_pred == token_gt:
+                num_identical_tokens += 1
+        ret['identical_token_ratio_action'] = num_identical_tokens / len(ret['output_action_tokens_gt'])
+
+        # print('output_text', output_text)
+        # save as jsonl file
+        f.write(json.dumps(ret) + '\n')
 
 if __name__ == "__main__":
     main()
