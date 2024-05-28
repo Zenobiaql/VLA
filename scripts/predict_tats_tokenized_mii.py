@@ -43,8 +43,8 @@ def main():
 
     # Do prediction
     local_rank = int(os.getenv("LOCAL_RANK", "0"))
-    os.makedirs(os.path.join(data_args.model_name_or_path, 'predictions'), exist_ok=True)
-    f = open(os.path.join(data_args.model_name_or_path, 'predictions', 'results.jsonl'), 'a')
+    os.makedirs(os.path.join(model_args.model_name_or_path, 'predictions'), exist_ok=True)
+    f = open(os.path.join(model_args.model_name_or_path, 'predictions', 'results.jsonl'), 'a')
 
     for sample in eval_dataset:
         input_text = sample['text']

@@ -81,8 +81,8 @@ def main():
     ###############
     # Do prediction
     ###############
-    os.makedirs(os.path.join(data_args.model_name_or_path, 'predictions'), exist_ok=True)
-    f = open(os.path.join(data_args.model_name_or_path, 'predictions', 'results.jsonl'), 'a')
+    os.makedirs(os.path.join(model_args.model_name_or_path, 'predictions'), exist_ok=True)
+    f = open(os.path.join(model_args.model_name_or_path, 'predictions', 'results.jsonl'), 'a')
     for sample in eval_dataset:
         input_text = sample['text']
         # print('input_text', input_text)
