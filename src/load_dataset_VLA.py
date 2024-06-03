@@ -76,7 +76,7 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
 
 def get_VLA_dataset(args, eos_token, split='train', return_info=False):
     root = args.data_root
-    shards = glob.glob(os.path.join(root, split, '*_stacked.jsonl'))
+    shards = glob.glob(os.path.join(root, split, '*.jsonl'))
     shards = sorted(shards)
     if args.data_debug:
         shards = shards[:1]
