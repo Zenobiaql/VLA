@@ -40,7 +40,7 @@ def main():
     # Load and pre-process the dataset
     #######################
 
-    eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test', return_info=True)
+    eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test_with_gt_action', return_info=True)
 
     def preprocess_func(example):
         example['text'] = example['input']
@@ -106,7 +106,7 @@ def main():
 
         ret['output_clip_description_pred'] = output_text.split('<eotp_o>')[0].split('<botp_o>')[-1]
         ret['output_clip_description_gt'] = sample['output'].split('<eotp_o>')[0].split('<botp_o>')[-1]
-        ret['output_clip_description_value_gt'] = sample['gt_actions']
+        
 
         ret['trajectory_id'] = sample['trajectory_id']
         ret['view'] = sample['view']
@@ -120,6 +120,8 @@ def main():
         ret['input_action_tokens'] = [int(x[:-1]) for x in input_text.split('<eoa_i>')[0].split('<boa_i>')[-1].split('<va') if x != '']
         ret['output_action_tokens_pred'] = [int(x[:-1]) for x in output_text.split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
         ret['output_action_tokens_gt'] = [int(x[:-1]) for x in sample['output'].split('<eoa_o>')[0].split('<boa_o>')[-1].split('<va') if x != '']
+
+        ret['output_action_value_gt'] = sample['gt_actions']
 
         # print the ratio of identical tokens
         num_identical_tokens = 0
