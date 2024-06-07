@@ -1,12 +1,12 @@
 # Model arguments
-model_name_or_path: /mnt/azureml/cr/j/224c93cc84dc4cd5bc1208419a8cc515/exe/wd/checkpoints/0524-phi3-6nodes/checkpoint-13000
+model_name_or_path: /home/v-rundongluo/data-rundong/VLA-experiments/0603-vision-first-phi3-bridge-noMask/checkpoint-7000/
 model_revision: main
 torch_dtype: float16
 use_flash_attention_2: false
 
 # Data training arguments
 preprocessing_num_workers: 12
-data_root: /mnt/data-rundong/bridge2_processed/tokenized_with_gt_action/
+data_root: /home/v-rundongluo/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked
 padding_side: left
 num_visual_action_tokens: 16384
 static_video_description:
