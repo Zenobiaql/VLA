@@ -222,6 +222,10 @@ class DataArguments:
         default=None,
         metadata={"help": "The root directory of the data."}
     )
+    data_roots: Optional[List[str]] = field(
+        default=None,
+        metadata={"help": "The root directories of the data."}
+    )
     padding_side: Optional[str] = field(
         default='right', metadata={
             "help": "Truncation side to use for the tokenizer.",
