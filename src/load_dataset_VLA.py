@@ -6,7 +6,7 @@ import random
 import numpy as np
 import glob
 
-def VLA_dataset_generator(shards, eos_token, static_video_description, return_info, action_before_vision):
+def VLA_dataset_generator(shards, eos_token, static_video_description, return_info, action_before_vision, wo_text):
     '''
     each shard is a jsonl file, with each line containing a json object
     the json object contains the following fields:
@@ -47,26 +47,30 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
             for line in f:
                 try:
                     instance_data = json.loads(line)
-                    if instance_data['input_clip_description'] == '': # sample a description for the input clip
-                        instance_data['input_clip_description'] = random.choice(static_video_description)
-                    text_input = '<bott_i>' + instance_data['task_description'] + '<eott_i>' + \
-                            '<bots_i>' + instance_data['scene_description'] + '<eots_i>' + \
-                            '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>'
+                    if wo_text:
+                        text_input = '<bott_i>' + instance_data['task_description'] + '<eott_i>'
+                        text_output = ''
+                    else:
+                        if instance_data['input_clip_description'] == '': # sample a description for the input clip
+                            instance_data['input_clip_description'] = random.choice(static_video_description)
+                        text_input = '<bott_i>' + instance_data['task_description'] + '<eott_i>' + \
+                                '<bots_i>' + instance_data['scene_description'] + '<eots_i>' + \
+                                '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>'
+                        text_output = '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>'
+                        
                     if action_before_vision:
                         text_input += '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>' + \
                                 '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>'
-                    else:
-                        text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
-                                '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
-                    text_output = '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>'
-                    if action_before_vision:
                         text_output += '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + \
                                         '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
                     else:
+                        text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
+                                '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
                         text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>' + \
-                                        '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + eos_token
+                                '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + eos_token
                 except:
                     continue
+
                 if return_info:
                     yield {"input": text_input, "output": text_output, 
                            "trajectory_id": instance_data['trajectory_id'], "view": instance_data['view'],
@@ -92,14 +96,16 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
                                                             "eos_token": eos_token,
                                                             "static_video_description": args.static_video_description,
                                                             "return_info": return_info,
-                                                            "action_before_vision": args.action_before_vision
+                                                            "action_before_vision": args.action_before_vision,
+                                                            "wo_text": args.wo_text
                                                             })
     else: # iterable dataset
         ds = IterableDataset.from_generator(VLA_dataset_generator, gen_kwargs={"shards": shards, 
                                                                 "eos_token": eos_token,
                                                                 "static_video_description": args.static_video_description,
                                                                 "return_info": return_info,
-                                                                "action_before_vision": args.action_before_vision
+                                                                "action_before_vision": args.action_before_vision,
+                                                                "wo_text": args.wo_text
                                                                 })
         # ds.column_names = ['text']
     return ds
