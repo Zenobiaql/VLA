@@ -20,7 +20,6 @@ dataset_type: dataset # or iterable_dataset
 action_before_vision: false
 wo_vision: true
 wo_text: true
-data_debug: true
 
 # SFT trainer config
 deepspeed: configs/deepspeed/ds_zero3.json
