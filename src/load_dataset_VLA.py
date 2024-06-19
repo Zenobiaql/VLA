@@ -6,7 +6,7 @@ import random
 import numpy as np
 import glob
 
-def VLA_dataset_generator(shards, eos_token, static_video_description, return_info, action_before_vision, wo_text):
+def VLA_dataset_generator(shards, eos_token, static_video_description, return_info, action_before_vision, wo_text, wo_vision):
     '''
     each shard is a jsonl file, with each line containing a json object
     the json object contains the following fields:
@@ -61,13 +61,16 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                     if action_before_vision:
                         text_input += '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>' + \
                                 '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>'
-                        text_output += '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + \
-                                        '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
+                        text_output += '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>'
+                        if not wo_vision:
+                            text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
                     else:
                         text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
                                 '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
-                        text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>' + \
-                                '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>' + eos_token
+                        if not wo_vision:
+                            text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
+                        text_output += '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>'
+                    text_output += eos_token
                 except:
                     continue
 
