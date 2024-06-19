@@ -100,7 +100,8 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
                                                             "static_video_description": args.static_video_description,
                                                             "return_info": return_info,
                                                             "action_before_vision": args.action_before_vision,
-                                                            "wo_text": args.wo_text
+                                                            "wo_text": args.wo_text,
+                                                            "wo_vision": args.wo_vision
                                                             })
     else: # iterable dataset
         ds = IterableDataset.from_generator(VLA_dataset_generator, gen_kwargs={"shards": shards, 
@@ -108,7 +109,8 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
                                                                 "static_video_description": args.static_video_description,
                                                                 "return_info": return_info,
                                                                 "action_before_vision": args.action_before_vision,
-                                                                "wo_text": args.wo_text
+                                                                "wo_text": args.wo_text,
+                                                                "wo_vision": args.wo_vision
                                                                 })
         # ds.column_names = ['text']
     return ds
