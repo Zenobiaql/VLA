@@ -1,5 +1,5 @@
 # Model arguments
-model_name_or_path: /mnt/data-shaofan/phi-3
+model_name_or_path: /mnt/data-rundong/phi-3
 model_revision: main
 torch_dtype: float16
 use_flash_attention_2: false
@@ -8,10 +8,10 @@ model_type: phi3
 
 # Data training arguments
 preprocessing_num_workers: 12
-# data_root: /mnt/data-shaofan/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
+# data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - /mnt/data-shaofan/robot_datasets/0602-action111-bridgeRT-noMask-woResidual-continue0531_tokenized_stacked/bridge2
-  - /mnt/data-shaofan/robot_datasets/0602-action111-bridgeRT-noMask-woResidual-continue0531_tokenized_stacked/rt1
+  - /mnt/data-rundong/robot_datasets/0602-action111-bridgeRT-noMask-woResidual-continue0531_tokenized_stacked/bridge2
+  - /mnt/data-rundong/robot_datasets/0602-action111-bridgeRT-noMask-woResidual-continue0531_tokenized_stacked/rt1
 padding_side: left
 num_visual_action_tokens: 16384
 static_video_description:
@@ -36,7 +36,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-shaofan/VLA-experiments/0705-tokenize0602-bridgeRT-actionFirst-phi3
+output_dir: /mnt/data-rundong/VLA-experiments/0705-tokenize0602-bridgeRT-actionFirst-phi3
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
