@@ -271,6 +271,7 @@ class DataArguments:
     end_idx: Optional[int] = field(default=None, metadata={"help": "The end index for the dataset."})
     wo_text: bool = field(default=False, metadata={"help": "Whether to use text or not."})
     wo_vision: bool = field(default=False, metadata={"help": "Whether to predict output vision tokens or not."})
+    only_text: bool = field(default=False, metadata={"help": "Whether to only use text as input and output."})
 
 
 @dataclass
