@@ -37,7 +37,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 256
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0708-tokenize0602-bridgeRT-onlytext-phi3
+output_dir: /mnt/data-rundong/VLA-experiments/0709-tokenize0602-bridgeRT-onlytext-phi3
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
