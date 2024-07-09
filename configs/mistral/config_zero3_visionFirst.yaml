@@ -36,7 +36,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 4096
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0709-tokenize0602-bridgeRT-testMem-mistral
+output_dir: /mnt/data-rundong/VLA-experiments/0709-tokenize0602-bridgeRT-visionFirst-mistral-testMem
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
