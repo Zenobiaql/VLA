@@ -50,9 +50,9 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                     if only_text: # For debugging: check if can train the language model correctly
                         if instance_data['input_clip_description'] == '': # sample a description for the input clip
                             instance_data['input_clip_description'] = random.choice(static_video_description)
-                            text_input = '<bott_i>' + instance_data['task_description'] + '<eott_i>' + \
-                                    '<bots_i>' + instance_data['scene_description'] + '<eots_i>' + \
-                                    '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>'
+                        text_input = '<bott_i>' + instance_data['task_description'] + '<eott_i>' + \
+                                '<bots_i>' + instance_data['scene_description'] + '<eots_i>' + \
+                                '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>'
                         text_output = '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>'
                     else: 
                         if wo_text:
