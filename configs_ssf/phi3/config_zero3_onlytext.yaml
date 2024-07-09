@@ -19,6 +19,7 @@ static_video_description:
 dataset_type: dataset # or iterable_dataset
 action_before_vision: false
 wo_vision: true
+only_text: true
 
 # SFT trainer config
 deepspeed: configs/deepspeed/ds_zero3.json
