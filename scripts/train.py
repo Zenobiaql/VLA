@@ -129,8 +129,13 @@ def main():
             for i in range(3):
                 logger.info(f"Sample {i}: {train_dataset[i]}")
     
-    # input always ends by <eoa_i>, use <eoa_i> as the response template
-    response_template_id = tokenizer.convert_tokens_to_ids(['<eoa_i>'])
+    # input commonly ends by <eoa_i>, use <eoa_i> as the response template
+    # when only text, input ends by <eotp_i>
+    if data_args.only_text:
+        response_template_id = tokenizer.convert_tokens_to_ids(['<eotp_i>'])
+    else:
+        response_template_id = tokenizer.convert_tokens_to_ids(['<eoa_i>'])
+
     data_collator = DataCollatorForCompletionOnlyLM(response_template_id, tokenizer=tokenizer)
 
     #######################
