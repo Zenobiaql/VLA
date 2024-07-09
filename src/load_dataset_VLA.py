@@ -47,6 +47,7 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
             for line in f:
                 try:
                     instance_data = json.loads(line)
+                        
                     if only_text: # For debugging: check if can train the language model correctly
                         if instance_data['input_clip_description'] == '': # sample a description for the input clip
                             instance_data['input_clip_description'] = random.choice(static_video_description)
@@ -73,10 +74,14 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                             if not wo_vision:
                                 text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
                         else:
-                            text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
+                            # text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
+                            #         '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
+                            # for testing memory capacity, double the tokens
+                            text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) * 2 + \
                                     '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
                             if not wo_vision:
-                                text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
+                                # text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
+                                text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) * 2 + '<eov_o>'
                             text_output += '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>'
                     text_output += eos_token
                 except:
