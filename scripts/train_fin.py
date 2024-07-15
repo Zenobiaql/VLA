@@ -163,9 +163,9 @@ def main():
     state_dict = torch.load(model_args.va_checkpoint, map_location='cpu')['state_dict'] ################# check !!!
     new_state_dict = OrderedDict()
     for key in list(state_dict.keys()):
-        if 'codebook' in key:
-            new_key = key.split('codebook.')[-1]
-            new_state_dict[new_key] = state_dict[key]
+        if key == 'codebook.embeddings':
+            new_state_dict['embeddings'] = state_dict[key]
+            break
     load_info = va_embed.load_state_dict(state_dict, strict=True)
     print(load_info)
 
