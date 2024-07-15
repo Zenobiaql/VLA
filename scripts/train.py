@@ -179,7 +179,7 @@ def main():
         model = MistralInVisionActionFeat.from_pretrained(model_args.model_name_or_path, 
                                                             tokenizer, va_embed, **model_kwargs)
             
-    model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
+    # model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 
     ########################
     # Initialize the Trainer

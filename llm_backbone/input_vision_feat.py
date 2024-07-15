@@ -65,6 +65,7 @@ class Phi3InVisionActionFeat(Phi3ForCausalLM):
     def from_pretrained(cls, pretrained_model_name_or_path, tokenizer, va_embed, **kwargs):
         # Call the parent class's from_pretrained method
         model = super(Phi3InVisionActionFeat, cls).from_pretrained(pretrained_model_name_or_path, **kwargs)
+        model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
         # rewrite self.model.embed_tokens with tokenizer and vision-action model
         origin_embed_tokens = model.get_input_embeddings()
         new_embed_tokens = TLAEmbedding(origin_embed_tokens, tokenizer, va_embed)
@@ -80,6 +81,7 @@ class MistralInVisionActionFeat(MistralForCausalLM):
     def from_pretrained(cls, pretrained_model_name_or_path, tokenizer, va_embed, **kwargs):
         # Call the parent class's from_pretrained method
         model = super(MistralInVisionActionFeat, cls).from_pretrained(pretrained_model_name_or_path, **kwargs)
+        model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
         # rewrite self.model.embed_tokens with tokenizer and vision-action model
         origin_embed_tokens = model.get_input_embeddings()
         new_embed_tokens = TLAEmbedding(origin_embed_tokens, tokenizer, va_embed)
