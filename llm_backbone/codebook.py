@@ -39,8 +39,8 @@ class Codebook(nn.Module):
     #     self.register_buffer('N', torch.zeros(n_codes))
     #     self.register_buffer('z_avg', self.embeddings.data.clone())
 
-    #     self.n_codes = n_codes
-    #     self.embedding_dim = embedding_dim
+        self.n_codes = n_codes
+        self.embedding_dim = embedding_dim
     #     self._need_init = True
     #     self.no_random_restart = no_random_restart
     #     self.restart_thres = restart_thres
