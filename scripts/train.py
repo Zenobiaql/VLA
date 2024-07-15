@@ -166,7 +166,7 @@ def main():
         if key == 'codebook.embeddings':
             new_state_dict['embeddings'] = state_dict[key]
             break
-    load_info = va_embed.load_state_dict(state_dict, strict=True)
+    load_info = va_embed.load_state_dict(new_state_dict, strict=True)
     print(load_info)
 
     # Initialize LLM
