@@ -168,6 +168,7 @@ def main():
             break
     load_info = va_embed.load_state_dict(new_state_dict, strict=True)
     print(load_info)
+    va_embed.to(training_args.device)
 
     # Initialize LLM
     if model_args.model_type == 'phi3':

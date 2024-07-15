@@ -34,22 +34,26 @@ class TLAEmbedding(nn.Module):
         id_bov_i, id_eov_i, id_boa_i, id_eoa_i = self.tokenizer.convert_tokens_to_ids(interest_token_list)
         # map vision & action input tokens to codebook embeddings
         for b in range(B):
-            cur_input_ids = input_ids[b]
-            # locate special tokens
-            p_bov_i = torch.nonzero(torch.eq(cur_input_ids, id_bov_i)).item()
-            p_eov_i = torch.nonzero(torch.eq(cur_input_ids, id_eov_i)).item()
-            p_boa_i = torch.nonzero(torch.eq(cur_input_ids, id_boa_i)).item()
-            p_eoa_i = torch.nonzero(torch.eq(cur_input_ids, id_eoa_i)).item()
-            vi_ids = cur_input_ids[p_bov_i+1 : p_eov_i].tolist()
-            ai_ids = cur_input_ids[p_boa_i+1 : p_eoa_i].tolist()
-            vi_ids = self.tokenizer.convert_ids_to_tokens(vi_ids)
-            ai_ids = self.tokenizer.convert_ids_to_tokens(ai_ids)
-            # restore codebook ids from from tokens <va*>
-            vi_ids = torch.tensor([int(x[3:-1]) for x in vi_ids], device=device)
-            ai_ids = torch.tensor([int(x[3:-1]) for x in ai_ids], device=device) # (l)
+            with torch.no_grad():
+                cur_input_ids = input_ids[b]
+                # locate special tokens
+                p_bov_i = torch.nonzero(torch.eq(cur_input_ids, id_bov_i)).item()
+                p_eov_i = torch.nonzero(torch.eq(cur_input_ids, id_eov_i)).item()
+                p_boa_i = torch.nonzero(torch.eq(cur_input_ids, id_boa_i)).item()
+                p_eoa_i = torch.nonzero(torch.eq(cur_input_ids, id_eoa_i)).item()
+                vi_ids = cur_input_ids[p_bov_i+1 : p_eov_i].tolist()
+                ai_ids = cur_input_ids[p_boa_i+1 : p_eoa_i].tolist()
+                vi_ids = self.tokenizer.convert_ids_to_tokens(vi_ids)
+                ai_ids = self.tokenizer.convert_ids_to_tokens(ai_ids)
+                # restore codebook ids from from tokens <va*>
+                vi_ids = torch.tensor([int(x[3:-1]) for x in vi_ids], device=device)
+                ai_ids = torch.tensor([int(x[3:-1]) for x in ai_ids], device=device) # (l)
 
-            vi_embeddings = self.va_projector(self.va_embed(vi_ids))
-            ai_embeddings = self.va_projector(self.va_embed(ai_ids)) # (l, embedding_dim)
+                vi_embeddings = self.va_embed(vi_ids)
+                ai_embeddings = self.va_embed(ai_ids)
+                
+            vi_embeddings = self.va_projector(vi_embeddings)
+            ai_embeddings = self.va_projector(ai_embeddings) # (l, embedding_dim)
             # replace vision & action input embeddings
             input_embeddings[b, p_bov_i+1 : p_eov_i, :] = vi_embeddings[:, :]
             input_embeddings[b, p_boa_i+1 : p_eoa_i, :] = ai_embeddings[:, :]
