@@ -9,7 +9,6 @@ from transformers import AutoModelForCausalLM, set_seed, MistralModel, PhiModel
 from transformers import TrainerCallback
 from transformers import Phi3Config, Phi3ForCausalLM, LlamaTokenizer
 from transformers import MistralConfig, MistralForCausalLM
-from collections import OrderedDict
 
 sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
@@ -17,9 +16,6 @@ from src import get_VLA_dataset
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
-
-from llm_backbone import Phi3InVisionActionFeat, MistralInVisionActionFeat
-from llm_backbone import Codebook
 
 logger = logging.getLogger(__name__)
 
@@ -157,28 +153,18 @@ def main():
         use_cache=False if training_args.gradient_checkpointing else True
     )
 
-    # Load Vision Action Codebook
-    logger.info("*** Load Vision Action Codebook ***")
-    va_embed = Codebook(model_args.va_ncodes, model_args.va_embedding_dim)
-    state_dict = torch.load(model_args.va_checkpoint, map_location='cpu')['state_dict'] ################# check !!!
-    new_state_dict = OrderedDict()
-    for key in list(state_dict.keys()):
-        if key == 'codebook.embeddings':
-            new_state_dict['embeddings'] = state_dict[key]
-            break
-    load_info = va_embed.load_state_dict(state_dict, strict=True)
-    print(load_info)
-
-    # Initialize LLM
-    if model_args.model_type == 'phi3':
-        # configuration = Phi3Config.from_pretrained()
-        model = Phi3InVisionActionFeat.from_pretrained(model_args.model_name_or_path, 
-                                                        tokenizer, va_embed, **model_kwargs)
-    elif model_args.model_type == 'mistral':
-        # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
-        model = MistralInVisionActionFeat.from_pretrained(model_args.model_name_or_path, 
-                                                            tokenizer, va_embed, **model_kwargs)
-            
+    if model_args.disable_auto_config:
+        if model_args.model_type == 'phi3':
+            # configuration = Phi3Config.from_pretrained()
+            model = Phi3ForCausalLM.from_pretrained(model_args.model_name_or_path, **model_kwargs)
+        elif model_args.model_type == 'mistral':
+            # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
+            model = MistralForCausalLM.from_pretrained(model_args.model_name_or_path, **model_kwargs)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            **model_kwargs,
+        )
     model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 
     ########################
