@@ -199,6 +199,12 @@ class ModelArguments:
         metadata={"help": "The model type.", "choices": ["mistral", "phi3"],
         })
 
+    va_ncodes: int = field(default=16384, metadata={"help": "Code numbers for vision action codebook"})
+    va_embedding_dim: int = field(default=256, metadata={"help": "Embedding dimension for vision action codebook"})
+    va_checkpoint: str = field(
+        default="/mnt/data-rundong/VQ3D-vision-action/0531-action111-bridge-noMask-woResidual/checkpoints/step_checkpoint-step_30000.ckpt",
+        metadata={"help": "The path of pretrained vision action VQ model."},
+    )
     def __post_init__(self):
         if self.load_in_8bit and self.load_in_4bit:
             raise ValueError("You can't use 8 bit and 4 bit precision at the same time")
