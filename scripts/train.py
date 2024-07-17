@@ -18,7 +18,7 @@ from src import get_VLA_dataset
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
 
-from llm_backbone import Phi3InVisionActionFeat, MistralInVisionActionFeat
+from llm_backbone import Phi3InVisionActionFeatMask, MistralInVisionActionFeatMask
 from llm_backbone import Codebook
 
 logger = logging.getLogger(__name__)
@@ -173,12 +173,12 @@ def main():
     # Initialize LLM
     if model_args.model_type == 'phi3':
         # configuration = Phi3Config.from_pretrained()
-        model = Phi3InVisionActionFeat.from_pretrained(model_args.model_name_or_path, 
-                                                        tokenizer, va_embed, **model_kwargs)
+        model = Phi3InVisionActionFeatMask.from_pretrained(model_args.model_name_or_path, 
+                                                        tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
     elif model_args.model_type == 'mistral':
         # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
-        model = MistralInVisionActionFeat.from_pretrained(model_args.model_name_or_path, 
-                                                            tokenizer, va_embed, **model_kwargs)
+        model = MistralInVisionActionFeatMask.from_pretrained(model_args.model_name_or_path, 
+                                                            tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
             
     # model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 

@@ -205,6 +205,8 @@ class ModelArguments:
         default="/mnt/data-rundong/VQ3D-vision-action/0531-action111-bridge-noMask-woResidual/checkpoints/step_checkpoint-step_30000.ckpt",
         metadata={"help": "The path of pretrained vision action VQ model."},
     )
+    v_mask_ratio: int = field(default=0.0, metadata={"help": "Mask ratio for vision tokens input to LLM"})
+    
     def __post_init__(self):
         if self.load_in_8bit and self.load_in_4bit:
             raise ValueError("You can't use 8 bit and 4 bit precision at the same time")
