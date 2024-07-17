@@ -12,7 +12,7 @@ from transformers import PreTrainedModel
 from .codebook import Codebook
 
 class TLAEmbeddingMask(nn.Module):
-    def __init__(self, text_embed: nn.Embedding, tokenizer: LlamaTokenizer, va_embed: Codebook, va_mask_ratio):
+    def __init__(self, text_embed: nn.Embedding, tokenizer: LlamaTokenizer, va_embed: Codebook, v_mask_ratio):
         super(TLAEmbeddingMask, self).__init__()
 
         self.text_embed = text_embed
@@ -21,15 +21,34 @@ class TLAEmbeddingMask(nn.Module):
         # Projector: can have other choices
         self.va_projector = nn.Linear(va_embed.embedding_dim, text_embed.embedding_dim)
 
-        self.va_mask_ratio = va_mask_ratio
+        self.v_mask_ratio = v_mask_ratio
+        self.mask_token = nn.Parameter(torch.zeros(text_embed.embedding_dim))
+
+    def convert_ids_to_embeds(input_ids, id_b, id_e):
+        """
+        convert tokenizer ids of vision & action tokens to codebook embeddings.
+        input_ids: Tensor(L)
+        (id_b, id_e): int, int, range of ids will be converted
+        """
+        # locate special tokens of begin and end
+        p_b = torch.nonzero(torch.eq(input_ids, id_b)).item()
+        p_e = torch.nonzero(torch.eq(input_ids, id_e)).item()
+        return input_ids
+
+
+    def random_masking(self, x, mask_ratio):
+        """
+        x: (L, D)
+        """
+        return x
     
     def forward(self, input_ids):
         """
         input_ids: Tensor (B, L)
-        output: Tensor (B, L, embedding_dim)
+        output: Tensor (B, L, text_embedding_dim)
         """
         device = input_ids.device
-        B, L = input_ids.shape
+        B, _ = input_ids.shape
         input_embeddings = self.text_embed(input_ids) # first embed token ids as originally doing
         # transform special tokens to ids
         interest_token_list = ['<bov_i>', '<eov_i>', '<boa_i>', '<eoa_i>']
@@ -56,6 +75,11 @@ class TLAEmbeddingMask(nn.Module):
                 
             vi_embeddings = self.va_projector(vi_embeddings)
             ai_embeddings = self.va_projector(ai_embeddings) # (l, embedding_dim)
+
+            # add mask to vision embeddings
+            if self.v_mask_ratio > 1e-6:
+                vi_embeddings = self.random_masking(vi_embeddings, self.v_mask_ratio)
+
             # replace vision & action input embeddings
             input_embeddings[b, p_bov_i+1 : p_eov_i, :] = vi_embeddings[:, :]
             input_embeddings[b, p_boa_i+1 : p_eoa_i, :] = ai_embeddings[:, :]

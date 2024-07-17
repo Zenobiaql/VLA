@@ -1,11 +1,7 @@
 # Copyright (c) Meta Platforms, Inc. All Rights Reserved
-
-import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.distributed as dist
 
 def shift_dim(x, src_dim=-1, dest_dim=-1, make_contiguous=True):
     n_dims = len(x.shape)
