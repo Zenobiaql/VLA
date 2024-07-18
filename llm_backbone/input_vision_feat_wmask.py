@@ -38,7 +38,7 @@ class TLAEmbeddingMask(nn.Module):
             p_e = torch.nonzero(torch.eq(input_ids, id_e)).item()
             ids = input_ids[p_b+1 : p_e].tolist()
             # convert tokenizer ids to codebook tokens
-            ids = self.tokenizer.convert_tokens_to_ids(ids)
+            ids = self.tokenizer.convert_ids_to_tokens(ids)
             # restore codebook ids from from tokens <va*>
             ids = torch.tensor([int(x[3:-1]) for x in ids], device=device) # (l)
 
