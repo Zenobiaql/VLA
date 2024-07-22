@@ -104,7 +104,8 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
             shards.extend(glob.glob(os.path.join(root, split, '*.jsonl')))
     else:
         assert False, 'data_root or data_roots must be provided'
-    shards = sorted(shards)
+    if split == 'train':
+        shards = sorted(shards)[:80]
     if args.data_debug:
         shards = shards[:1]
     if args.dataset_type == 'dataset':
