@@ -7,15 +7,15 @@ disable_auto_config: true
 model_type: mistral
 va_ncodes: 16384
 va_embedding_dim: 256
-va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0602-action111-bridgeRT-noMask-woResidual-continue0531/checkpoints/step_checkpoint-step_50000.ckpt
+va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0715-dinov2-action111-bridge-noMask-woResidual/checkpoints/step_checkpoint-step_25000.ckpt
 v_mask_ratio: 0.0
 
 # Data training arguments
 preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - /mnt/data-rundong/robot_datasets/0602-action111-bridgeRT-noMask-woResidual-continue0531_tokenized_stacked/bridge2
-  - /mnt/data-rundong/robot_datasets/0602-action111-bridgeRT-noMask-woResidual-continue0531_tokenized_stacked/rt1
+  - /mnt/data-rundong/robot_datasets/0715-dinov2-action111-bridge-noMask-woResidual_step25000_tokenized_stacked/bridge2
+  - /mnt/data-rundong/robot_datasets/0715-dinov2-action111-bridge-noMask-woResidual_step25000_tokenized_stacked/rt1
 padding_side: left
 num_visual_action_tokens: 16384
 static_video_description:
@@ -40,7 +40,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0719-tokenize0602-bridgeRT-visionFirst-vaFeat-noMask-mistral
+output_dir: /mnt/data-rundong/VLA-experiments/0722-tokenize0715-step_25000-bridgeRT-visionFirst-vaFeat-noMask-mistral
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
