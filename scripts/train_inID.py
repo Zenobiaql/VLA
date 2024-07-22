@@ -109,7 +109,7 @@ def main():
         train_dataset = train_dataset.select(range(2000))
         eval_dataset = eval_dataset.select(range(100))
 
-    train_dataset = eval_dataset.map(
+    train_dataset = train_dataset.map(
         preprocess_func,
         num_proc=data_args.preprocessing_num_workers,
         desc="Preprocessing testing dataset",
