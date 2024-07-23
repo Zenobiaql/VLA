@@ -151,25 +151,15 @@ def main():
             # print whether this process should save the checkpoint
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
 
-    for split in range(0, 10):
+    for split in range(0, 100):
 
-    #######################
+        #######################
         # Load and pre-process the dataset
         #######################
 
         train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train')
         eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
     
-        with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
-            # take a sample from the dataset (iteratable)
-            if type(train_dataset) == datasets.IterableDataset:
-                for i, example in enumerate(train_dataset.take(3)):
-                    logger.info(f"Sample {i}: {example['text']}")
-            else:
-                for i in range(3):
-                    logger.info(f"Sample {i}: {train_dataset[i]}")
-
-
         trainer = SFTTrainer(
             model=model,
             args=training_args,

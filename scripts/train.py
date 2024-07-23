@@ -199,7 +199,6 @@ def main():
         data_collator=data_collator,
         callbacks=[PrintCallback()] if training_args.debug else None,
         max_seq_length=training_args.max_seq_length,
-        dataset_num_proc=data_args.preprocessing_num_workers,
         dataset_kwargs=training_args.dataset_kwargs,
     )
 
