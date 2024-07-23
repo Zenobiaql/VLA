@@ -11,7 +11,7 @@ va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0715-dinov2-action111-bridge
 v_mask_ratio: 0.0
 
 # Data training arguments
-preprocessing_num_workers: 128
+preprocessing_num_workers: 256
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
   - /mnt/data-rundong/robot_datasets/0715-dinov2-action111-bridge-noMask-woResidual_step25000_tokenized_stacked/bridge2
