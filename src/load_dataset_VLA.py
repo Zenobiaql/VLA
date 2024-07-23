@@ -101,7 +101,7 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
     else:
         assert False, 'data_root or data_roots must be provided'
 
-    shards = shards[::10]
+    shards = shards[::100]
     
     if args.data_debug:
         shards = shards[:1]
