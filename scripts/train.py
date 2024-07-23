@@ -1,14 +1,12 @@
 import logging
-import random
 import sys
 
 import datasets
 import torch
 import transformers
-from transformers import AutoModelForCausalLM, set_seed, MistralModel, PhiModel
+from transformers import set_seed
 from transformers import TrainerCallback
-from transformers import Phi3Config, Phi3ForCausalLM, LlamaTokenizer
-from transformers import MistralConfig, MistralForCausalLM
+from transformers import LlamaTokenizer
 from collections import OrderedDict
 
 sys.path.append('.')
