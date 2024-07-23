@@ -152,16 +152,19 @@ def main():
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
 
     total_max_iter = training_args.max_steps
-    
-    for piece in range(0, 100):
+    num_pieces = 100
 
+    max_iter_per_piece = total_max_iter // num_pieces
+
+    for piece in range(0, num_pieces):
+        training_args.max_steps = (piece + 1) * max_iter_per_piece
         
         #######################
         # Load and pre-process the dataset
         #######################
 
-        train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train', start=piece)
-        eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test', start=piece)
+        train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
+        eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
     
         trainer = SFTTrainer(
             model=model,
