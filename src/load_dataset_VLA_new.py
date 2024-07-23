@@ -87,12 +87,8 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                 except:
                     continue
 
-                if return_info:
-                    yield {"input": text_input, "output": text_output, 
-                           "trajectory_id": instance_data['trajectory_id'], "view": instance_data['view'],
-                           "gt_actions": instance_data['gt_actions']}
-                else:
-                    yield {"input": text_input, "output": text_output}
+                text_data = text_input + text_output
+                yield {"text": text_data}
 
 def get_VLA_dataset(args, eos_token, split='train', return_info=False):
     if args.data_root is not None:
@@ -104,10 +100,9 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
             shards.extend(glob.glob(os.path.join(root, split, '*.jsonl')))
     else:
         assert False, 'data_root or data_roots must be provided'
-    if split == 'train':
-        shards = sorted(shards)[:80]
-    else:
-        shards = sorted(shards)
+
+    shards = shards[::2]
+    
     if args.data_debug:
         shards = shards[:1]
     if args.dataset_type == 'dataset':

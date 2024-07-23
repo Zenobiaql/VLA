@@ -151,14 +151,17 @@ def main():
             # print whether this process should save the checkpoint
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
 
-    for split in range(0, 100):
+    total_max_iter = training_args.max_steps
+    
+    for piece in range(0, 100):
 
+        
         #######################
         # Load and pre-process the dataset
         #######################
 
-        train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train')
-        eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
+        train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train', start=piece)
+        eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test', start=piece)
     
         trainer = SFTTrainer(
             model=model,
@@ -170,7 +173,6 @@ def main():
             data_collator=data_collator,
             callbacks=[PrintCallback()] if training_args.debug else None,
             max_seq_length=training_args.max_seq_length,
-            dataset_num_proc=data_args.preprocessing_num_workers,
             dataset_kwargs=training_args.dataset_kwargs,
         )
 

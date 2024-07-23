@@ -100,27 +100,27 @@ def main():
     train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train')
     eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
 
-    # def preprocess_func(example):
-    #     example_new = {}
-    #     example_new['text'] = example['input'] + example['output']
-    #     return example_new
+    def preprocess_func(example):
+        example_new = {}
+        example_new['text'] = example['input'] + example['output']
+        return example_new
 
-    # # only take a little samples for debug
-    # if training_args.debug:
-    #     print('Debug mode, only take a little samples for training and evaluation')
-    #     train_dataset = train_dataset.select(range(2000))
-    #     eval_dataset = eval_dataset.select(range(100))
+    # only take a little samples for debug
+    if training_args.debug:
+        print('Debug mode, only take a little samples for training and evaluation')
+        train_dataset = train_dataset.select(range(2000))
+        eval_dataset = eval_dataset.select(range(100))
 
-    # train_dataset = train_dataset.map(
-    #     preprocess_func,
-    #     num_proc=data_args.preprocessing_num_workers,
-    #     desc="Preprocessing training dataset",
-    # )
-    # eval_dataset = eval_dataset.map(
-    #     preprocess_func,
-    #     num_proc=data_args.preprocessing_num_workers,
-    #     desc="Preprocessing testing dataset",
-    # )
+    train_dataset = train_dataset.map(
+        preprocess_func,
+        num_proc=data_args.preprocessing_num_workers,
+        desc="Preprocessing training dataset",
+    )
+    eval_dataset = eval_dataset.map(
+        preprocess_func,
+        num_proc=data_args.preprocessing_num_workers,
+        desc="Preprocessing testing dataset",
+    )
 
     with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
         # take a sample from the dataset (iteratable)
