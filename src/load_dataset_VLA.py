@@ -97,7 +97,7 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
     elif args.data_roots is not None:
         shards = []
         for root in args.data_roots:
-            shards.extend(glob.glob(os.path.join(root, split, '*.jsonl')))
+            shards.extend(glob.glob(os.path.join(root, split, '*.jsonl'))[::2])
     else:
         assert False, 'data_root or data_roots must be provided'
     if args.data_debug:
