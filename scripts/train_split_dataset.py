@@ -13,6 +13,7 @@ from transformers import set_seed
 from transformers import TrainerCallback
 from transformers import LlamaTokenizer
 from collections import OrderedDict
+from safetensors import safe_open
 
 sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
@@ -25,6 +26,15 @@ from llm_backbone import Phi3InVisionActionFeatMask, MistralInVisionActionFeatMa
 from llm_backbone import Codebook
 
 logger = logging.getLogger(__name__)
+
+def load_safetensors_weights(model, checkpoint_dir): 
+    weights_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.safetensors')] 
+    for weights_file in weights_files: 
+        weights_path = os.path.join(checkpoint_dir, weights_file) 
+        with safe_open(weights_path, framework="pt", device="cpu") as f: 
+            for key in f.keys(): 
+                model.state_dict()[key].copy_(f.get_tensor(key)) 
+    return model
 
 def main():
     try:
@@ -177,14 +187,7 @@ def main():
         if last_checkpoint is not None:
             logger.info(f"Checkpoint detected, loading model state dict at {last_checkpoint}.")
             # Re-Initialize LLM
-            if model_args.model_type == 'phi3':
-                # configuration = Phi3Config.from_pretrained()
-                model = Phi3InVisionActionFeatMask.from_pretrained(last_checkpoint, 
-                                                                tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
-            elif model_args.model_type == 'mistral':
-                # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
-                model = MistralInVisionActionFeatMask.from_pretrained(last_checkpoint, 
-                                                                    tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+            model = load_safetensors_weights(model, last_checkpoint)
     
         trainer = SFTTrainer(
             model=model,
@@ -220,8 +223,8 @@ def main():
         trainer.log_metrics("train", metrics)
         trainer.save_metrics("train", metrics)
         trainer.save_state()
-        
-        torch.cuda.empty_cache()
+
+        torch.cuda.empty_cache() # clean cuda cache every loop to avoid cuda OOM
         
     ##################################
     # Save model and create model card

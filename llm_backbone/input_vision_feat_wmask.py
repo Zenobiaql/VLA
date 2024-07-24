@@ -126,3 +126,4 @@ class MistralInVisionActionFeatMask(MistralForCausalLM):
         new_embed_tokens = TLAEmbeddingMask(origin_embed_tokens, tokenizer, va_embed, v_mask_ratio)
         model.set_input_embeddings(new_embed_tokens)
         return model
+    
