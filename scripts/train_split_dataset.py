@@ -187,7 +187,7 @@ def main():
         if last_checkpoint is not None:
             logger.info(f"Checkpoint detected, loading model state dict at {last_checkpoint}.")
             # Re-Initialize LLM
-            model = load_safetensors_weights(model, last_checkpoint)
+            model = load_safetensors_weights(model, last_checkpoint).to(training_args.device)
     
         trainer = SFTTrainer(
             model=model,
