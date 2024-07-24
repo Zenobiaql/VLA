@@ -11,3 +11,4 @@ from .model_utils import (
 )
 from .load_dataset_VLA import get_VLA_dataset
 from .load_dataset_VLA_debug import get_VLA_dataset as get_VLA_dataset_debug
+from .load_dataset_VLA_new import get_VLA_dataset as get_VLA_dataset_split

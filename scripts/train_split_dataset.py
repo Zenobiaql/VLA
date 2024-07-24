@@ -1,3 +1,8 @@
+"""
+This code is for the case when dataset is too large and cannot be loaded once
+Use loops to split the dataset and load one split after the training of last split is finished
+"""
+
 import logging
 import sys
 
@@ -11,7 +16,7 @@ from collections import OrderedDict
 
 sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
-from src import get_VLA_dataset
+from src import get_VLA_dataset_split
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
@@ -152,19 +157,19 @@ def main():
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
 
     total_max_iter = training_args.max_steps
-    num_pieces = 100
+    num_pieces = 1250
 
     max_iter_per_piece = total_max_iter // num_pieces
 
     for piece in range(0, num_pieces):
-        training_args.max_steps = (piece + 1) * max_iter_per_piece
+        training_args.max_steps = (piece + 1) * max_iter_per_piece # reset the max iter for the current training loop
         
         #######################
         # Load and pre-process the dataset
         #######################
 
-        train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
-        eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
+        train_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
+        eval_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
     
         trainer = SFTTrainer(
             model=model,
@@ -176,6 +181,7 @@ def main():
             data_collator=data_collator,
             callbacks=[PrintCallback()] if training_args.debug else None,
             max_seq_length=training_args.max_seq_length,
+            dataset_num_proc=data_args.preprocessing_num_workers,
             dataset_kwargs=training_args.dataset_kwargs,
         )
 

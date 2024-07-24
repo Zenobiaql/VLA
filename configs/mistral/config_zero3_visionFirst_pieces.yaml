@@ -11,7 +11,7 @@ va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0715-dinov2-action111-bridge
 v_mask_ratio: 0.0
 
 # Data training arguments
-preprocessing_num_workers: 32
+preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
   - /mnt/data-rundong/robot_datasets/0715-dinov2-action111-bridge-noMask-woResidual_step25000_tokenized_stacked/bridge2
@@ -40,7 +40,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0722-tokenize0715-step_25000-bridgeRT-visionFirst-vaFeat-noMask-mistral
+output_dir: /mnt/data-rundong/VLA-experiments/0724-tokenize0715-step_25000-bridgeRT-visionFirst-vaFeat-noMask-mistral
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
@@ -48,7 +48,7 @@ remove_unused_columns: true
 report_to:
 - tensorboard
 save_strategy: steps
-save_steps: 100
+save_steps: 20
 save_total_limit: 10
 load_best_model_at_end: true
 seed: 42
