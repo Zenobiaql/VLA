@@ -161,7 +161,7 @@ def main():
 
     max_iter_per_piece = total_max_iter // num_pieces
 
-    for piece in range(2, num_pieces):
+    for piece in range(0, num_pieces):
 
         logger.info("*** Begin to train data subset {}/{} ***".format(piece + 1, num_pieces))
         training_args.max_steps = (piece + 1) * max_iter_per_piece # reset the max iter for the current training loop
@@ -191,17 +191,12 @@ def main():
         # Training loop
         ###############
 
-        # Check for last checkpoint
-        last_checkpoint = get_checkpoint(training_args)
-        if last_checkpoint is not None and training_args.resume_from_checkpoint is None:
-            logger.info(f"Checkpoint detected, resuming training at {last_checkpoint}.")
-
         logger.info("*** Train ***")
         checkpoint = None
-        if training_args.resume_from_checkpoint is not None:
-            checkpoint = training_args.resume_from_checkpoint
-        elif last_checkpoint is not None:
-            checkpoint = last_checkpoint
+        # if training_args.resume_from_checkpoint is not None:
+        #     checkpoint = training_args.resume_from_checkpoint
+        # elif last_checkpoint is not None:
+        #     checkpoint = last_checkpoint
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         metrics = train_result.metrics
         metrics["train_samples"] = len(train_dataset)
@@ -209,6 +204,21 @@ def main():
         trainer.save_metrics("train", metrics)
         trainer.save_state()
 
+        # Check for last checkpoint
+        last_checkpoint = get_checkpoint(training_args)
+        if last_checkpoint is not None and training_args.resume_from_checkpoint is None:
+            logger.info(f"Checkpoint detected, resuming training at {last_checkpoint}.")
+        
+        # Re-Initialize LLM
+        if model_args.model_type == 'phi3':
+            # configuration = Phi3Config.from_pretrained()
+            model = Phi3InVisionActionFeatMask.from_pretrained(last_checkpoint, 
+                                                            tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+        elif model_args.model_type == 'mistral':
+            # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
+            model = MistralInVisionActionFeatMask.from_pretrained(last_checkpoint, 
+                                                                tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+            
     ##################################
     # Save model and create model card
     ##################################
