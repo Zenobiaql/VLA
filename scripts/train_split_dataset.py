@@ -161,10 +161,11 @@ def main():
 
     max_iter_per_piece = total_max_iter // num_pieces
 
+    training_args.max_steps = max_iter_per_piece # reset the max iter for the current training loop
+
     for piece in range(0, num_pieces):
 
         logger.info("*** Begin to train data subset {}/{} ***".format(piece + 1, num_pieces))
-        training_args.max_steps = (piece + 1) * max_iter_per_piece # reset the max iter for the current training loop
         
         #######################
         # Load and pre-process the dataset
