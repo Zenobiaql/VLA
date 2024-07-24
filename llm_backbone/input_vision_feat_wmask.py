@@ -23,8 +23,8 @@ class TLAEmbeddingMask(nn.Module):
         # Projector: can have other choices
         self.va_projector = nn.Linear(va_embed.embedding_dim, text_embed.embedding_dim)
 
-        self.v_mask_ratio = v_mask_ratio
-        self.mask_token = nn.Parameter(torch.zeros(1, text_embed.embedding_dim))
+        # self.v_mask_ratio = v_mask_ratio
+        # self.mask_token = nn.Parameter(torch.zeros(1, text_embed.embedding_dim))
 
     def convert_va_ids_to_embeds(self, input_ids, id_b, id_e, device):
         """
@@ -46,27 +46,27 @@ class TLAEmbeddingMask(nn.Module):
         embeddings = self.va_projector(embeddings) # (l, text_embedding_dim)
         return embeddings, p_b, p_e
 
-    def random_masking(self, x, mask_ratio):
-        """
-        x: (L, D)
-        """
-        L, D = x.shape
-        len_keep = int(L * (1 - mask_ratio))
+    # def random_masking(self, x, mask_ratio):
+    #     """
+    #     x: (L, D)
+    #     """
+    #     L, D = x.shape
+    #     len_keep = int(L * (1 - mask_ratio))
 
-        noise = torch.rand(L, device=x.device)
+    #     noise = torch.rand(L, device=x.device)
 
-        # sort noise for each sample
-        ids_shuffle = torch.argsort(noise) # ascend: small is keep, large is remove
-        ids_keep = ids_shuffle[:len_keep]
+    #     # sort noise for each sample
+    #     ids_shuffle = torch.argsort(noise) # ascend: small is keep, large is remove
+    #     ids_keep = ids_shuffle[:len_keep]
         
-        # generate bianry mask, 1 is keep
-        mask = torch.zeros(L, device=x.device)
-        mask[ids_keep] = 1
-        mask = mask.unsqueeze(-1)
+    #     # generate bianry mask, 1 is keep
+    #     mask = torch.zeros(L, device=x.device)
+    #     mask[ids_keep] = 1
+    #     mask = mask.unsqueeze(-1)
 
-        mask_tokens = self.mask_token.repeat(L, 1)
-        x_masked = x * mask + mask_tokens * (1 - mask)
-        return x_masked
+    #     mask_tokens = self.mask_token.repeat(L, 1)
+    #     x_masked = x * mask + mask_tokens * (1 - mask)
+    #     return x_masked
 
     def forward(self, input_ids):
         """
@@ -85,9 +85,9 @@ class TLAEmbeddingMask(nn.Module):
             vi_embeddings, p_bov_i, p_eov_i = self.convert_va_ids_to_embeds(cur_input_ids, id_bov_i, id_eov_i, device)
             ai_embeddings, p_boa_i, p_eoa_i = self.convert_va_ids_to_embeds(cur_input_ids, id_boa_i, id_eoa_i, device)
 
-            # add mask to vision embeddings
-            if self.v_mask_ratio > 1e-6:
-                vi_embeddings = self.random_masking(vi_embeddings, self.v_mask_ratio)
+            # # add mask to vision embeddings
+            # if self.v_mask_ratio > 1e-6:
+            #     vi_embeddings = self.random_masking(vi_embeddings, self.v_mask_ratio)
 
             # replace vision & action input embeddings
             input_embeddings[b, p_bov_i+1 : p_eov_i, :] = vi_embeddings[:, :]
