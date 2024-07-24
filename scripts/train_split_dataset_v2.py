@@ -155,6 +155,14 @@ def main():
         def on_evaluation(self, args: transformers.TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs):
             # print whether this process should save the checkpoint
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
+    
+    class SetStartStepCallback(TrainerCallback):
+        def __init__(self, start_step):
+            self.start_step = start_step
+
+        def on_step_begin(self, args: transformers.TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs):
+            if state.global_step < self.start_step:
+                state.global_step = self.start_step
 
     total_max_iter = training_args.max_steps
     num_pieces = 1250
@@ -163,8 +171,12 @@ def main():
 
     for piece in range(0, num_pieces):
 
+        start_step = piece * max_iter_per_piece # manually set the start iter for the current training loop
+        callbacks = [SetStartStepCallback(start_step=start_step)]
+        if training_args.debug:
+            callbacks.append(PrintCallback())
+
         logger.info("*** Begin to train data subset {}/{} ***".format(piece + 1, num_pieces))
-        training_args.max_steps = (piece + 1) * max_iter_per_piece
         
         #######################
         # Load and pre-process the dataset
@@ -172,19 +184,6 @@ def main():
 
         train_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
         eval_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
-
-        last_checkpoint = get_checkpoint(training_args)
-        if last_checkpoint is not None:
-            logger.info(f"Checkpoint detected, loading model state dict at {last_checkpoint}.")
-            # Re-Initialize LLM
-            if model_args.model_type == 'phi3':
-                # configuration = Phi3Config.from_pretrained()
-                model = Phi3InVisionActionFeatMask.from_pretrained(last_checkpoint, 
-                                                                tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
-            elif model_args.model_type == 'mistral':
-                # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
-                model = MistralInVisionActionFeatMask.from_pretrained(last_checkpoint, 
-                                                                    tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
     
         trainer = SFTTrainer(
             model=model,
@@ -194,7 +193,7 @@ def main():
             tokenizer=tokenizer,
             dataset_text_field="text",
             data_collator=data_collator,
-            callbacks=None,
+            callbacks=callbacks,
             max_seq_length=training_args.max_seq_length,
             dataset_num_proc=data_args.preprocessing_num_workers,
             dataset_kwargs=training_args.dataset_kwargs,
@@ -203,26 +202,35 @@ def main():
         ###############
         # Training loop
         ###############
-        
-        # Check for last checkpoint
-        if last_checkpoint is not None and training_args.resume_from_checkpoint is None:
-            logger.info(f"Checkpoint detected, resuming training at {last_checkpoint}.")
 
         logger.info("*** Train ***")
         checkpoint = None
-        if training_args.resume_from_checkpoint is not None:
-            checkpoint = training_args.resume_from_checkpoint
-        elif last_checkpoint is not None:
-            checkpoint = last_checkpoint
+        # if training_args.resume_from_checkpoint is not None:
+        #     checkpoint = training_args.resume_from_checkpoint
+        # elif last_checkpoint is not None:
+        #     checkpoint = last_checkpoint
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         metrics = train_result.metrics
         metrics["train_samples"] = len(train_dataset)
         trainer.log_metrics("train", metrics)
         trainer.save_metrics("train", metrics)
         trainer.save_state()
+
+        # Check for last checkpoint
+        last_checkpoint = get_checkpoint(training_args)
+        if last_checkpoint is not None and training_args.resume_from_checkpoint is None:
+            logger.info(f"Checkpoint detected, resuming training at {last_checkpoint}.")
         
-        torch.cuda.empty_cache()
-        
+        # Re-Initialize LLM
+        if model_args.model_type == 'phi3':
+            # configuration = Phi3Config.from_pretrained()
+            model = Phi3InVisionActionFeatMask.from_pretrained(last_checkpoint, 
+                                                            tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+        elif model_args.model_type == 'mistral':
+            # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
+            model = MistralInVisionActionFeatMask.from_pretrained(last_checkpoint, 
+                                                                tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+            
     ##################################
     # Save model and create model card
     ##################################
