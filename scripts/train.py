@@ -27,12 +27,10 @@ def load_safetensors_weights(model, checkpoint_dir):
     for weights_file in weights_files: 
         weights_path = os.path.join(checkpoint_dir, weights_file) 
         with safe_open(weights_path, framework="pt", device="cpu") as f: 
-            for key in f.keys(): 
-                if key in model.state_dict().keys():
-                    print('key: {}, Shape: {} {}'.format(key, model.state_dict()[key].shape, f.get_tensor(key).shape))
-                    model.state_dict()[key].copy_(f.get_tensor(key)) 
-                else:
-                    print("Weights of key {} are not loaded".format(key))
+            keys = model.state_dict().keys()
+            for key in keys:
+                print('Key: {}'.format(key))
+                model.state_dict()[key].copy_(f.get_tensor('model.' + key))
     return model
 
 def main():
@@ -196,8 +194,6 @@ def main():
     if training_args.resume_from_checkpoint is not None:
         logger.info(f"Checkpoint detected, loading weights at {training_args.resume_from_checkpoint}.")
         model = load_safetensors_weights(model, training_args.resume_from_checkpoint)
-        #####################
-        ####################
             
     # model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 
