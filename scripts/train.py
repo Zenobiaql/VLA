@@ -8,6 +8,7 @@ from transformers import set_seed
 from transformers import TrainerCallback
 from transformers import LlamaTokenizer
 from collections import OrderedDict
+from safetensors import safe_open
 
 sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
@@ -20,6 +21,19 @@ from llm_backbone import Phi3InVisionActionFeatMask, MistralInVisionActionFeatMa
 from llm_backbone import Codebook
 
 logger = logging.getLogger(__name__)
+
+def load_safetensors_weights(model, checkpoint_dir): 
+    weights_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.safetensors')] 
+    for weights_file in weights_files: 
+        weights_path = os.path.join(checkpoint_dir, weights_file) 
+        with safe_open(weights_path, framework="pt", device="cpu") as f: 
+            for key in f.keys(): 
+                if key in model.state_dict().keys():
+                    print('key: {}, Shape: {} {}'.format(key, model.state_dict()[key].shape, f.get_tensor(key).shape))
+                    model.state_dict()[key].copy_(f.get_tensor(key)) 
+                else:
+                    print("Weights of key {} are not loaded".format(key))
+    return model
 
 def main():
     try:
@@ -177,6 +191,13 @@ def main():
         # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
         model = MistralInVisionActionFeatMask.from_pretrained(model_args.model_name_or_path, 
                                                             tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+        
+    # Load weights
+    if training_args.resume_from_checkpoint is not None:
+        logger.info(f"Checkpoint detected, loading weights at {training_args.resume_from_checkpoint}.")
+        model = load_safetensors_weights(model, training_args.resume_from_checkpoint)
+        #####################
+        ####################
             
     # model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 

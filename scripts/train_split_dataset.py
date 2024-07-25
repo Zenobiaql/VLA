@@ -33,8 +33,11 @@ def load_safetensors_weights(model, checkpoint_dir):
         weights_path = os.path.join(checkpoint_dir, weights_file) 
         with safe_open(weights_path, framework="pt", device="cpu") as f: 
             for key in f.keys(): 
-                print('key: {}, Shape: {} {}'.format(key, model.state_dict()[key].shape, f.get_tensor(key).shape))
-                model.state_dict()[key].copy_(f.get_tensor(key)) 
+                if key in model.state_dict().keys():
+                    print('key: {}, Shape: {} {}'.format(key, model.state_dict()[key].shape, f.get_tensor(key).shape))
+                    model.state_dict()[key].copy_(f.get_tensor(key)) 
+                else:
+                    print("Weights of key {} is not loaded".format(key))
     return model
 
 def main():
@@ -172,7 +175,7 @@ def main():
 
     max_iter_per_piece = total_max_iter // num_pieces
 
-    for piece in range(0, num_pieces):
+    for piece in range(1, num_pieces):
 
         logger.info("*** Begin to train data subset {}/{} ***".format(piece + 1, num_pieces))
         training_args.max_steps = (piece + 1) * max_iter_per_piece
