@@ -183,13 +183,13 @@ def main():
 
     max_iter_per_piece = total_max_iter // num_pieces
 
-    for piece in range(1, num_pieces):
+    for piece in range(0, num_pieces):
 
         logger.info("*** Begin to train data subset {}/{} ***".format(piece + 1, num_pieces))
         training_args.max_steps = (piece + 1) * max_iter_per_piece
         
         #######################
-        # Load and pre-process the dataset
+        # Load last checkpoint
         #######################
         last_checkpoint = get_checkpoint(training_args)
         if last_checkpoint is not None:
@@ -206,6 +206,9 @@ def main():
                 
             model = load_safetensors_weights(model, last_checkpoint).to(training_args.device) # load embed_tokens weights
 
+        #######################
+        # Load and pre-process the dataset
+        #######################
         train_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
         eval_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
     
