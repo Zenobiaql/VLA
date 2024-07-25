@@ -26,11 +26,14 @@ def load_safetensors_weights(model, checkpoint_dir):
     weights_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.safetensors')] 
     for weights_file in weights_files: 
         weights_path = os.path.join(checkpoint_dir, weights_file) 
-        with safe_open(weights_path, framework="pt", device="cpu") as f: 
-            keys = model.state_dict().keys()
-            for key in keys:
-                print('Key: {}'.format(key))
-                model.state_dict()[key].copy_(f.get_tensor('model.' + key))
+        with safe_open(weights_path, framework="pt", device='cpu') as f: 
+            for key in f.keys():
+                if 'embed_tokens' in key:
+                    print('Load key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
+                    if key in model.state_dict().keys():
+                        model.state_dict()[key].copy_(f.get_tensor(key))
+                    else:
+                        print('Skip key {}'.format(key))
     return model
 
 def main():
@@ -181,19 +184,22 @@ def main():
     va_embed.to(training_args.device)
 
     # Initialize LLM
+    llm_checkpoint_path = model_args.model_name_or_path
+    if training_args.resume_from_checkpoint is not None:
+        logger.info(f"Checkpoint detected, loading weights at {training_args.resume_from_checkpoint}.")
+        llm_checkpoint_path = training_args.resume_from_checkpoint
     if model_args.model_type == 'phi3':
         # configuration = Phi3Config.from_pretrained()
-        model = Phi3InVisionActionFeatMask.from_pretrained(model_args.model_name_or_path, 
+        model = Phi3InVisionActionFeatMask.from_pretrained(llm_checkpoint_path, 
                                                         tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
     elif model_args.model_type == 'mistral':
         # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
-        model = MistralInVisionActionFeatMask.from_pretrained(model_args.model_name_or_path, 
+        model = MistralInVisionActionFeatMask.from_pretrained(llm_checkpoint_path, 
                                                             tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
         
-    # Load weights
+    # Load weights of embed_tokens
     if training_args.resume_from_checkpoint is not None:
-        logger.info(f"Checkpoint detected, loading weights at {training_args.resume_from_checkpoint}.")
-        model = load_safetensors_weights(model, training_args.resume_from_checkpoint)
+        model = load_safetensors_weights(model, llm_checkpoint_path)
             
     # model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
 

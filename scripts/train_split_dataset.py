@@ -34,7 +34,7 @@ def load_safetensors_weights(model, checkpoint_dir):
         with safe_open(weights_path, framework="pt", device='cpu') as f: 
             for key in f.keys():
                 if 'embed_tokens' in key:
-                    print('Key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
+                    print('Load key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
                     if key in model.state_dict().keys():
                         model.state_dict()[key].copy_(f.get_tensor(key))
                     else:
@@ -204,7 +204,7 @@ def main():
                 model = MistralInVisionActionFeatMask.from_pretrained(last_checkpoint, 
                                                                     tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
                 
-            model = load_safetensors_weights(model, last_checkpoint).to(training_args.device)
+            model = load_safetensors_weights(model, last_checkpoint).to(training_args.device) # load embed_tokens weights
 
         train_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
         eval_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
