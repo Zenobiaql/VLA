@@ -2,3 +2,5 @@ data/*
 experiments/*
 logs/*
 src/__pycache__/*
+llm_backbone/__pycache__/*
+testcode.py
