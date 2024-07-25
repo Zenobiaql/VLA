@@ -32,12 +32,17 @@ def load_safetensors_weights(model, checkpoint_dir):
     for weights_file in weights_files: 
         weights_path = os.path.join(checkpoint_dir, weights_file) 
         with safe_open(weights_path, framework="pt", device="cpu") as f: 
-            for key in f.keys(): 
-                if key in model.state_dict().keys():
-                    print('key: {}, Shape: {} {}'.format(key, model.state_dict()[key].shape, f.get_tensor(key).shape))
-                    model.state_dict()[key].copy_(f.get_tensor(key)) 
-                else:
-                    print("Weights of key {} is not loaded".format(key))
+            keys = model.state_dict().keys()
+            for key in keys:
+                print('Key: {}'.format(key))
+                model.state_dict()[key].copy_(f.get_tensor('model.' + key))
+            # for key in f.keys(): 
+            #     key = key.split('model.')[-1]
+            #     if key in model.state_dict().keys():
+            #         print('key: {}, Shape: {} {}'.format(key, model.state_dict()[key].shape, f.get_tensor(key).shape))
+            #         model.state_dict()[key].copy_(f.get_tensor(key)) 
+            #     else:
+            #         print("Weights of key {} is not loaded".format(key))
     return model
 
 def main():
