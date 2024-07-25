@@ -29,8 +29,8 @@ def load_safetensors_weights(model, checkpoint_dir):
         with safe_open(weights_path, framework="pt", device='cpu') as f: 
             for key in f.keys():
                 if 'embed_tokens' in key:
-                    print('Load key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
                     if key in model.state_dict().keys():
+                        print('Load key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
                         model.state_dict()[key].copy_(f.get_tensor(key))
                     else:
                         print('Skip key {}'.format(key))
