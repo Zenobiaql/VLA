@@ -27,17 +27,18 @@ from llm_backbone import Codebook
 
 logger = logging.getLogger(__name__)
 
-def load_safetensors_weights(model, checkpoint_dir, device): 
+def load_safetensors_weights(model, checkpoint_dir): 
     weights_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.safetensors')] 
     for weights_file in weights_files: 
         weights_path = os.path.join(checkpoint_dir, weights_file) 
-        with safe_open(weights_path, framework="pt", device=device) as f: 
+        with safe_open(weights_path, framework="pt", device='cpu') as f: 
             for key in f.keys():
-                print('Key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
-                if key in model.state_dict().keys():
-                    model.state_dict()[key] = f.get_tensor(key)
-                else:
-                    print('Skip key {}'.format(key))
+                if 'embed_tokens' in key:
+                    print('Key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
+                    if key in model.state_dict().keys():
+                        model.state_dict()[key].copy_(f.get_tensor(key))
+                    else:
+                        print('Skip key {}'.format(key))
             # for key in f.keys(): 
             #     key = key.split('model.')[-1]
             #     if key in model.state_dict().keys():
@@ -194,7 +195,16 @@ def main():
         if last_checkpoint is not None:
             logger.info(f"Checkpoint detected, loading model state dict at {last_checkpoint}.")
             # Re-Initialize LLM
-            model = load_safetensors_weights(model, last_checkpoint, training_args.device).to(training_args.device)
+            if model_args.model_type == 'phi3':
+                # configuration = Phi3Config.from_pretrained()
+                model = Phi3InVisionActionFeatMask.from_pretrained(last_checkpoint, 
+                                                                tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+            elif model_args.model_type == 'mistral':
+                # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
+                model = MistralInVisionActionFeatMask.from_pretrained(last_checkpoint, 
+                                                                    tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
+                
+            model = load_safetensors_weights(model, last_checkpoint).to(training_args.device)
 
         train_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
         eval_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
