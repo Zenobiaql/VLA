@@ -247,7 +247,12 @@ def main():
         trainer.save_metrics("train", metrics)
         trainer.save_state()
 
+        del trainer
+        del model
+        del train_dataset
+        del eval_dataset
         torch.cuda.empty_cache() # clean cuda cache every loop to avoid cuda OOM
+        
         
     ##################################
     # Save model and create model card
