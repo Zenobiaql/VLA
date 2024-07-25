@@ -34,8 +34,8 @@ def load_safetensors_weights(model, checkpoint_dir):
         with safe_open(weights_path, framework="pt", device="cpu") as f: 
             keys = model.state_dict().keys()
             for key in keys:
-                print('Key: {}'.format(key))
-                model.state_dict()[key].copy_(f.get_tensor('model.' + key))
+                print('Key: {}, Shape: {}'.format(key, model.state_dict()[key].shape))
+                model.state_dict()[key].copy_(f.get_tensor(key))
             # for key in f.keys(): 
             #     key = key.split('model.')[-1]
             #     if key in model.state_dict().keys():
@@ -188,15 +188,14 @@ def main():
         #######################
         # Load and pre-process the dataset
         #######################
-
-        train_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
-        eval_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
-
         last_checkpoint = get_checkpoint(training_args)
         if last_checkpoint is not None:
             logger.info(f"Checkpoint detected, loading model state dict at {last_checkpoint}.")
             # Re-Initialize LLM
             model = load_safetensors_weights(model, last_checkpoint).to(training_args.device)
+
+        train_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='train', start=piece, num_pieces=num_pieces)
+        eval_dataset = get_VLA_dataset_split(data_args, tokenizer.eos_token, split='test', start=piece, num_pieces=num_pieces)
     
         trainer = SFTTrainer(
             model=model,
