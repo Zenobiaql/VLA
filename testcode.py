@@ -19,5 +19,8 @@ from transformers import Trainer
 #     #             model.state_dict()[key].copy_(f.get_tensor(key)) 
 #     # return model
 # load_safetensors_weights('../model_weights')
-key = 'model.embeddings.json'
-print(key.split('model.')[-1])
+# key = 'model.embeddings.json'
+# print(key.split('model.')[-1])
+
+model = MistralInVisionActionFeatMask.from_pretrained('asas')
+model.generate()
