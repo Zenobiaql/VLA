@@ -40,7 +40,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0725-tokenize0715-step_25000-bridgeRT-visionFirst-vaFeat-noMask-mistral-piece2of3
+output_dir: /mnt/data-rundong/VLA-experiments/0729-tokenize0715-step_25000-bridgeRT-visionFirst-vaFeat-noMask-mistral-piece3of3
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
@@ -54,4 +54,4 @@ load_best_model_at_end: true
 seed: 42
 warmup_ratio: 0.1
 save_on_each_node: false
-resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0722-tokenize0715-step_25000-bridgeRT-visionFirst-vaFeat-noMask-mistral/checkpoint-16000/
+resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0725-tokenize0715-step_25000-bridgeRT-visionFirst-vaFeat-noMask-mistral-piece2of3/checkpoint-31000/
