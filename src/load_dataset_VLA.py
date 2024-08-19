@@ -66,16 +66,17 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                                     '<bots_i>' + instance_data['scene_description'] + '<eots_i>' + \
                                     '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>'
                             text_output = '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>'
-                            
+                        
+                        text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
+                                    '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
+                                    
                         if action_before_vision:
-                            text_input += '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>' + \
-                                    '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>'
+                            # text_input += '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>' + \
+                            #         '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>'
                             text_output += '<boa_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_action_tokens']]) + '<eoa_o>'
                             if not wo_vision:
                                 text_output += '<bov_o>' + ''.join([f'<va{str(x)}>' for x in instance_data['output_video_tokens']]) + '<eov_o>'
                         else:
-                            text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
-                                    '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
                             # for testing memory capacity, double the tokens
                             # text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) * 2 + '<eov_i>' + \
                             #         '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
@@ -107,7 +108,7 @@ def get_VLA_dataset(args, eos_token, split='train', return_info=False):
         assert False, 'data_root or data_roots must be provided'
 
     len_shard = len(shards)
-    shards = shards[len_shard // 2:]
+    shards = shards[:len_shard // 2]
  
     if args.data_debug:
         shards = shards[:1]
