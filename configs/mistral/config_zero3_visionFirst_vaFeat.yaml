@@ -14,7 +14,7 @@ v_mask_ratio: 0.0
 preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - /mnt/data-rundong/robot_datasets/pizza_0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/pizza/
+  - /mnt/data-rundong/robot_datasets/fullpizza_0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/pizza/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/bridge2/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/rt1/
 padding_side: left
@@ -30,7 +30,7 @@ bf16: false
 fp16: true
 do_eval: true
 eval_strategy: steps
-eval_steps: 500
+eval_steps: 100
 gradient_accumulation_steps: 1
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
@@ -41,7 +41,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0905-FTpizza-tokenize0722-step_95000-bridgeRT-VisionFirst-vaFeat-noMask-mistral
+output_dir: /mnt/data-rundong/VLA-experiments/0906-FTfullpizza-tokenize0722-step_95000-bridgeRT-VisionFirst-vaFeat-noMask-mistral
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
@@ -49,7 +49,7 @@ remove_unused_columns: true
 report_to:
 - tensorboard
 save_strategy: steps
-save_steps: 1000
+save_steps: 200
 save_total_limit: 10
 load_best_model_at_end: true
 seed: 42
