@@ -35,3 +35,4 @@ regex
 scikit-video
 prettytable
 timm
+huggingface_hub
