@@ -7,7 +7,7 @@ from .model_utils import (
     get_peft_config,
     get_quantization_config,
     get_tokenizer,
-    is_adapter_model,
+    # is_adapter_model,
 )
 from .load_dataset_VLA import get_VLA_dataset
 from .load_dataset_VLA_debug import get_VLA_dataset as get_VLA_dataset_debug
