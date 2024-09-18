@@ -56,4 +56,4 @@ load_best_model_at_end: true
 seed: 42
 warmup_ratio: 0.0
 save_on_each_node: false
-# resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0805-tokenize0722-step_95000-bridgeRT-woVision-vaFeat-noMask-mistral-piece1of2/checkpoint-20000/
+resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0909-FTfullpizza-tokenize0722-step_95000-bridgeRT-VisionFirst-vaFeat-noMask-mistral/checkpoint-8600/
