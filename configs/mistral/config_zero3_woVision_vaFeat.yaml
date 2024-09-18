@@ -44,8 +44,8 @@ max_seq_length: 1280
 max_steps: 50000
 output_dir: /mnt/data-rundong/VLA-experiments/0918-FTfullpizza-tokenize0914-step_60000-bridgeRT-woVision-vaFeat-noMask-mistral
 overwrite_output_dir: true
-per_device_eval_batch_size: 2
-per_device_train_batch_size: 2
+per_device_eval_batch_size: 4
+per_device_train_batch_size: 4
 remove_unused_columns: true
 report_to:
 - tensorboard
