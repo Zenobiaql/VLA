@@ -34,8 +34,8 @@ class TLAEmbeddingMask(nn.Module):
         """
         with torch.no_grad():
             # locate special tokens of begin and end
-            p_b = torch.nonzero(torch.eq(input_ids, id_b)).item()
-            p_e = torch.nonzero(torch.eq(input_ids, id_e)).item()
+            p_b = torch.nonzero(torch.eq(input_ids, id_b)).item()                
+            p_e = torch.nonzero(torch.eq(input_ids, id_e)).item() 
             ids = input_ids[p_b+1 : p_e].tolist()
             # convert tokenizer ids to codebook tokens
             ids = self.tokenizer.convert_ids_to_tokens(ids)

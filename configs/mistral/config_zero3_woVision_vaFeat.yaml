@@ -40,7 +40,7 @@ log_level: info
 logging_strategy: steps
 logging_steps: 5  
 lr_scheduler_type: cosine
-max_seq_length: 1280
+max_seq_length: 2048
 max_steps: 50000
 output_dir: /mnt/data-rundong/VLA-experiments/0918-FTfullpizza-continue0909_step_8600-tokenize0914-step_60000-bridgeRT-woVision-vaFeat-noMask-mistral
 overwrite_output_dir: true
