@@ -66,6 +66,8 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                                     '<bots_i>' + instance_data['scene_description'] + '<eots_i>' + \
                                     '<botp_i>' + instance_data['input_clip_description'] + '<eotp_i>'
                             text_output = '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>'
+                            if len(text_input) > 900 or len(text_output) > 800:
+                                continue
                         
                         text_input += '<bov_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_video_tokens']]) + '<eov_i>' + \
                                     '<boa_i>' + ''.join([f'<va{str(x)}>' for x in instance_data['input_action_tokens']]) + '<eoa_i>'
