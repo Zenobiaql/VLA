@@ -14,7 +14,7 @@ v_mask_ratio: 0.0
 preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - robot_datasets/0920-finetunepizza_0920-finetune-pizza-lr1e-6-bs16-open0close1_step56000_tokenized_stacked/pizza_width/
+  - /mnt/netdisk/robot_datasets/0920-finetunepizza_0920-finetune-pizza-lr1e-6-bs16-open0close1_step56000_tokenized_stacked/pizza_width/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/bridge2/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/rt1/
 padding_side: left
