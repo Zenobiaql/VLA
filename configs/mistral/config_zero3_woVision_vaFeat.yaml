@@ -14,7 +14,7 @@ v_mask_ratio: 0.0
 preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - /mnt/netdisk/robot_datasets/0920-finetunepizza_0920-finetune-pizza-lr1e-6-bs16-open0close1_step56000_tokenized_stacked/pizza_width/
+  - /mnt/data-rundong/robot_datasets/0920-finetunepizza_0920-finetune-pizza-lr1e-6-bs16-open0close1_step56000_tokenized_stacked/pizza_width/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/bridge2/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/rt1/
 padding_side: left
@@ -42,7 +42,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0924-FTpizza-width-0920-open0close1-step56000-continue0918-step50000-woVision
+output_dir: /mnt/data-rundong/VLA-experiments/0924-FTpizza-width-0920-open0close1-step56000-continue0918-step50000-woVision/
 overwrite_output_dir: true
 per_device_eval_batch_size: 4
 per_device_train_batch_size: 4
