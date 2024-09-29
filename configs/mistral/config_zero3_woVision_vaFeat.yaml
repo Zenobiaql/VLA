@@ -7,14 +7,14 @@ disable_auto_config: true
 model_type: mistral
 va_ncodes: 16384
 va_embedding_dim: 256
-va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0920-finetune-pizza-lr1e-6-bs16-open0close1/checkpoints/step_checkpoint-step_56000.ckpt
+va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0928-ftpizza-4ldec-open0close1-lr1e-6-continue-0725-step95000/checkpoints/step_checkpoint-step_18000.ckpt
 v_mask_ratio: 0.0
 
 # Data training arguments
 preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - /mnt/data-rundong/robot_datasets/0920-finetunepizza_0920-finetune-pizza-lr1e-6-bs16-open0close1_step56000_tokenized_stacked/pizza_width/
+  - /mnt/data-rundong/robot_datasets/0928-ftpizza-4ldec-open0close1-lr1e-6-continue-0725-step95000_step18000_tokenized_stacked/pizza_width/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/bridge2/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/rt1/
 padding_side: left
@@ -31,7 +31,7 @@ bf16: false
 fp16: true
 do_eval: true
 eval_strategy: steps
-eval_steps: 500
+eval_steps: 1000
 gradient_accumulation_steps: 1
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
