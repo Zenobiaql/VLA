@@ -42,7 +42,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0924-FTpizza-width-0920-open0close1-step56000-continue0918-step50000-woVision/
+output_dir: /mnt/data-rundong/VLA-experiments/0929-FTpizza-width-vq-0928-step18000-continue0812-step24000-woVision/
 overwrite_output_dir: true
 per_device_eval_batch_size: 4
 per_device_train_batch_size: 4
@@ -50,10 +50,10 @@ remove_unused_columns: true
 report_to:
 - tensorboard
 save_strategy: steps
-save_steps: 1000
+save_steps: 5000
 save_total_limit: 10
 load_best_model_at_end: true
 seed: 42
 warmup_ratio: 0.0
 save_on_each_node: false
-resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0918-FTfullpizza-continue0909_step_8600-tokenize0914-step_60000-bridgeRT-woVision-vaFeat-noMask-mistral/checkpoint-50000/
+resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0812-tokenize0722-step_95000-bridgeRT-VisionFirst-vaFeat-noMask-mistral-piece2of2/checkpoint-24000/
