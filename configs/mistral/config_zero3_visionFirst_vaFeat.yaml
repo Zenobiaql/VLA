@@ -7,14 +7,14 @@ disable_auto_config: true
 model_type: mistral
 va_ncodes: 16384
 va_embedding_dim: 256
-va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0914-finetune-pizza-lr1e-6-bs64/checkpoints/step_checkpoint-step_60000.ckpt
+va_checkpoint: /mnt/data-rundong/VQ3D-vision-action/0929-ftpizza-4ldec-bs128-open0close1-lr1e-6-width07-continue-0725-step95000/checkpoints/step_checkpoint-step_50000.ckpt
 v_mask_ratio: 0.0
 
 # Data training arguments
 preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - /mnt/data-rundong/robot_datasets/0914-finetunepizza_0914-finetune-pizza-lr1e-6-bs64_step60000_tokenized_stacked/
+  - /mnt/data-rundong/robot_datasets/0929-ftpizza-4ldec-bs128-open0close1-lr1e-6-width07-continue-0725-step95000_step50000_tokenized_stacked/pizza_width/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/bridge2/
   # - /mnt/data-rundong/robot_datasets/0725-dinov2-action111-bridgeRT-noMask-woResidual-usePixelWeight-continueTrain0722_step95000_tokenized_stacked/rt1/
 padding_side: left
@@ -41,7 +41,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/0918-FTfullpizza-tokenize0914-step_60000-bridgeRT-VisionFirst-vaFeat-noMask-mistral
+output_dir: /mnt/data-rundong/VLA-experiments/1010-FTpizza-width07-vq-0929-step50000-continue0812-step24000-visionFirst/
 overwrite_output_dir: true
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
@@ -55,4 +55,5 @@ load_best_model_at_end: true
 seed: 42
 warmup_ratio: 0.0
 save_on_each_node: false
+resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0812-tokenize0722-step_95000-bridgeRT-VisionFirst-vaFeat-noMask-mistral-piece2of2/checkpoint-24000/
 # resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/0909-FTfullpizza-tokenize0722-step_95000-bridgeRT-VisionFirst-vaFeat-noMask-mistral/checkpoint-8600/
