@@ -57,8 +57,10 @@ def VLA_dataset_generator(shards, eos_token, static_video_description, return_in
                         text_output = '<botp_o>' + instance_data['output_clip_description'] + '<eotp_o>'
                     else: 
                         if wo_text:
-                            text_input = '<bott_i>' + instance_data['task_description'] + '<eott_i>'
-                            text_output = ''
+                            text_input = '<bott_i>' + instance_data['task_description'] + '<eott_i>' + \
+                                    '<bots_i>' + '<eots_i>' + \
+                                    '<botp_i>' + '<eotp_i>'
+                            text_output = '<botp_o>' + '<eotp_o>'
                         else:
                             if instance_data['input_clip_description'] == '': # sample a description for the input clip
                                 instance_data['input_clip_description'] = random.choice(static_video_description)
