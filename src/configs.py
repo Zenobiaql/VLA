@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import dataclasses
 import os
 import sys
@@ -164,7 +165,7 @@ class ModelArguments:
         },
     )
     use_peft: bool = field(
-        default=False,
+        default=True,
         metadata={"help": ("Whether to use PEFT or not for training.")},
     )
     lora_r: Optional[int] = field(
