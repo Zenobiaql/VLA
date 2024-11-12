@@ -36,6 +36,7 @@ def load_safetensors_weights(model, checkpoint_dir):
                         print('Skip key {}'.format(key))
     return model
 
+
 def main():
     try:
         print('MASTER_ADDR', os.environ['MASTER_ADDR'])
