@@ -14,7 +14,7 @@ sys.path.append('.')
 from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
 from src import get_VLA_dataset
 
-from src import SFTTrainer, DataCollatorForCompletionOnlyLM
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
 
 from llm_backbone import Phi3InVisionActionFeatMask, MistralInVisionActionFeatMask
