@@ -11,7 +11,7 @@ from collections import OrderedDict
 from safetensors import safe_open
 
 sys.path.append('.')
-from src import DataArguments, H4ArgumentParser, ModelArguments, PEFTConfig, get_checkpoint, get_datasets
+from src import DataArguments, H4ArgumentParser, ModelArguments, SFTConfig, get_checkpoint, get_datasets
 from src import get_VLA_dataset
 
 from src import SFTTrainer, DataCollatorForCompletionOnlyLM

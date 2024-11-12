@@ -39,7 +39,7 @@ logging_steps: 5
 lr_scheduler_type: cosine
 max_seq_length: 2048
 max_steps: 50000
-output_dir: /mnt/data-rundong/VLA-experiments/1112-qilin-wolora-FTpizza-crop-woVision-width07-vq-4ldec-dropout01-grip-1023-step20000-continue1030-step8000/
+output_dir: /mnt/data-rundong/VLA-experiments/1112-qilin-peft-vq1023-vq20000-continue1030-continue8000/
 overwrite_output_dir: true
 per_device_eval_batch_size: 4
 per_device_train_batch_size: 4
