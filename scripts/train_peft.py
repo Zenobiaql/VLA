@@ -17,6 +17,8 @@ from src import get_VLA_dataset
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
 
+from peft import LoraConfig, TaskType
+
 from llm_backbone import Phi3InVisionActionFeatMask, MistralInVisionActionFeatMask
 from llm_backbone import Codebook
 
@@ -180,6 +182,11 @@ def main():
         def on_evaluation(self, args: transformers.TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs):
             # print whether this process should save the checkpoint
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
+
+    # peft module
+    peft_config = LoraConfig(task_type=TaskType.SEQ_2_SEQ_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
+    model = get_peft_model(model, peft_config)
+    model.print_trainable_parameters()
 
     trainer = SFTTrainer(
         model=model,

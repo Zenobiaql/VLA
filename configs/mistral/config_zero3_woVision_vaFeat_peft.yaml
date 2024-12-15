@@ -53,4 +53,4 @@ load_best_model_at_end: true
 seed: 42
 warmup_ratio: 0.0
 save_on_each_node: false
-resume_from_checkpoint: /mnt/data-rundong/VLA-experiments/1030-qilin-FTpizza-crop-woVision-width07-vq-4ldec-dropout01-grip-1023-step20000-continue1025-step10000/checkpoint-8000/
+resume_from_checkpoint: None
