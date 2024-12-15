@@ -108,7 +108,6 @@ def get_peft_config(model_args: ModelArguments) -> Union[PeftConfig, None]:
     return peft_config
 
 
-
 def get_checkpoint(training_args: Union[SFTConfig, DPOConfig]) -> Union[Path, None]:
     last_checkpoint = None
     if os.path.isdir(training_args.output_dir):

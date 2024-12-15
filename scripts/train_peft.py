@@ -22,7 +22,6 @@ from llm_backbone import Codebook
 
 logger = logging.getLogger(__name__)
 
-# Load safetensors weights
 def load_safetensors_weights(model, checkpoint_dir): 
     weights_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.safetensors')] 
     for weights_file in weights_files: 
@@ -39,7 +38,6 @@ def load_safetensors_weights(model, checkpoint_dir):
 
 
 def main():
-    # Print environment variables
     try:
         print('MASTER_ADDR', os.environ['MASTER_ADDR'])
         print('MASTER_PORT', os.environ['MASTER_PORT'])
@@ -50,11 +48,9 @@ def main():
     except:
         pass
 
-    # Huggingface Hub login
     from huggingface_hub import login
     login(token='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')
 
-    # Parse arguments
     parser = H4ArgumentParser((ModelArguments, DataArguments, SFTConfig))
     model_args, data_args, training_args = parser.parse()
 
@@ -98,24 +94,17 @@ def main():
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     vocab_size = len(tokenizer)
 
-    # add new tokens when when calling tokenizer
+    # add eos token when when calling tokenizer
     visual_action_tokens_to_add = ['<va' + str(i) + '>' for i in range(0, data_args.num_visual_action_tokens)]
     num_added_visual_action_tokens = tokenizer.add_special_tokens({'additional_special_tokens': visual_action_tokens_to_add})
-    special_tokens = ['<bott_i>', '<eott_i>', 
-                      # task text
-                        '<bots_i>', '<eots_i>', 
-                        # scene text
-                        '<botp_i>', '<eotp_i>', 
-                        # policy text
-                        '<bov_i>', '<eov_i>', '<boa_i>', '<eoa_i>', 
-                        # vision and action tokens
-                        '<botp_o>', '<eotp_o>', 
-                        # output policy text
-                        '<bov_o>', '<eov_o>', '<boa_o>', '<eoa_o>'] 
-                        # output vision and action tokens
+    special_tokens = ['<bott_i>', '<eott_i>', # task text
+                        '<bots_i>', '<eots_i>', # scene text
+                        '<botp_i>', '<eotp_i>', # policy text
+                        '<bov_i>', '<eov_i>', '<boa_i>', '<eoa_i>', # vision and action tokens
+                        '<botp_o>', '<eotp_o>', # output policy text
+                        '<bov_o>', '<eov_o>', '<boa_o>', '<eoa_o>'] # output vision and action tokens
     num_added_special_tokens = tokenizer.add_special_tokens({'additional_special_tokens': special_tokens})
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-    #######tokenizer具体是怎么用的？
 
     # For SFT training, padding should be on the right (if overflow occurs)
     tokenizer.padding_side = data_args.padding_side
@@ -124,7 +113,6 @@ def main():
     train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train')
     eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
 
-    # Log a few random samples from the processed training set
     with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
         # take a sample from the dataset (iteratable)
         if type(train_dataset) == datasets.IterableDataset:
@@ -145,21 +133,21 @@ def main():
 
     # Load pretrained model
     logger.info("*** Load pretrained model ***")
-
     # use float16 (V100 does not support bfloat16)
     torch_dtype = torch.float16 if training_args.fp16 else torch.float32
 
     model_kwargs = dict(
+        # revision=model_args.model_revision,
         use_flash_attention_2=model_args.use_flash_attention_2,
         torch_dtype=torch_dtype,
+        # trust_remote_code=True,
         use_cache=False if training_args.gradient_checkpointing else True
     )
 
     # Load Vision Action Codebook
     logger.info("*** Load Vision Action Codebook ***")
-
     va_embed = Codebook(model_args.va_ncodes, model_args.va_embedding_dim)
-    state_dict = torch.load(model_args.va_checkpoint, map_location='cpu')['state_dict']
+    state_dict = torch.load(model_args.va_checkpoint, map_location='cpu')['state_dict'] ################# check !!!
     new_state_dict = OrderedDict()
     for key in list(state_dict.keys()):
         if key == 'codebook.embeddings':
@@ -170,19 +158,16 @@ def main():
     va_embed.to(training_args.device)
 
     # Initialize LLM
-    
-    # if training args has checkpoint, load from checkpoint
+    llm_checkpoint_path = model_args.model_name_or_path
     if training_args.resume_from_checkpoint is not None:
         logger.info(f"Checkpoint detected, loading weights at {training_args.resume_from_checkpoint}.")
         llm_checkpoint_path = training_args.resume_from_checkpoint
-    else: 
-        llm_checkpoint_path = model_args.model_name_or_path
-
     if model_args.model_type == 'phi3':
+        # configuration = Phi3Config.from_pretrained()
         model = Phi3InVisionActionFeatMask.from_pretrained(llm_checkpoint_path, 
                                                         tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
-        
     elif model_args.model_type == 'mistral':
+        # configuration = MistralConfig.from_pretrained(model_args.model_name_or_path)
         model = MistralInVisionActionFeatMask.from_pretrained(llm_checkpoint_path, 
                                                             tokenizer, va_embed, model_args.v_mask_ratio, **model_kwargs)
         
