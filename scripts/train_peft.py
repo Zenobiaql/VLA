@@ -17,7 +17,7 @@ from src import get_VLA_dataset
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
 
-from peft import LoraConfig, TaskType
+from peft import LoraConfig, TaskType, get_peft_model
 
 from llm_backbone import Phi3InVisionActionFeatMask, MistralInVisionActionFeatMask
 from llm_backbone import Codebook
