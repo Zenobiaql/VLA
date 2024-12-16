@@ -17,8 +17,6 @@ from src import get_VLA_dataset
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 import os
 
-from peft import LoraConfig, TaskType
-
 from llm_backbone import Phi3InVisionActionFeatMask, MistralInVisionActionFeatMask
 from llm_backbone import Codebook
 
@@ -38,7 +36,6 @@ def load_safetensors_weights(model, checkpoint_dir):
                         print('Skip key {}'.format(key))
     return model
 
-
 def main():
     try:
         print('MASTER_ADDR', os.environ['MASTER_ADDR'])
@@ -50,8 +47,8 @@ def main():
     except:
         pass
 
-    from huggingface_hub import login
-    login(token='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')
+    # from huggingface_hub import login
+    # login(token='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')
 
     parser = H4ArgumentParser((ModelArguments, DataArguments, SFTConfig))
     model_args, data_args, training_args = parser.parse()
@@ -59,7 +56,9 @@ def main():
     # Set seed for reproducibility
     set_seed(training_args.seed)
 
+    ###############
     # Setup logging
+    ###############
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -72,30 +71,35 @@ def main():
     transformers.utils.logging.enable_default_handler()
     transformers.utils.logging.enable_explicit_format()
 
+    training_torch_type = ''
+    if training_args.fp16:
+        training_torch_type = 'fp16'
+    elif training_args.bf16:
+        training_torch_type = 'bf16'
+
     # Log on each process a small summary
     logger.warning(
         f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
-        + f" distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
+        + f" distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_torch_type}"
     )
     logger.info(f"Model parameters {model_args}")
     logger.info(f"Data parameters {data_args}")
     logger.info(f"Training/evaluation parameters {training_args}")
 
-    """
-    Load tokenizer
-        The visual modality has 2048 (16384) tokens, and the action modality has 256 tokens, add them to the tokenizer
-        Add special tokens for the visual and action modalities, 
-    including <bots_i>, <eots_i>, <botp_i>, <eotp_i>, <bov_i>, <eov_i>, <boa_i>, <eoa_i>,
-                <botp_o>, <eotp_o>, <bov_o>, <eov_o>, <boa_o>, <eoa_o>
-    In total 16384 + vocab_size
-    """
-    
+    ################
+    # Load tokenizer
+    # The visual modality has 2048 (16384) tokens, and the action modality has 256 tokens, add them to the tokenizer
+    # Add special tokens for the visual and action modalities, 
+    #     including <bots_i>, <eots_i>, <botp_i>, <eotp_i>, <bov_i>, <eov_i>, <boa_i>, <eoa_i>,
+    #               <botp_o>, <eotp_o>, <bov_o>, <eov_o>, <boa_o>, <eoa_o>
+    # In total 16384 + vocab_size
+    ################
     if model_args.disable_auto_config:
+        # both phi3 and mistral use the LlamaTokenizer
         tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
     else:
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     vocab_size = len(tokenizer)
-
     # add eos token when when calling tokenizer
     visual_action_tokens_to_add = ['<va' + str(i) + '>' for i in range(0, data_args.num_visual_action_tokens)]
     num_added_visual_action_tokens = tokenizer.add_special_tokens({'additional_special_tokens': visual_action_tokens_to_add})
@@ -107,13 +111,37 @@ def main():
                         '<bov_o>', '<eov_o>', '<boa_o>', '<eoa_o>'] # output vision and action tokens
     num_added_special_tokens = tokenizer.add_special_tokens({'additional_special_tokens': special_tokens})
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-
     # For SFT training, padding should be on the right (if overflow occurs)
     tokenizer.padding_side = data_args.padding_side
 
+    #######################
     # Load and pre-process the dataset
+    #######################
+
     train_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='train')
     eval_dataset = get_VLA_dataset(data_args, tokenizer.eos_token, split='test')
+
+    # def preprocess_func(example):
+    #     example_new = {}
+    #     example_new['text'] = example['input'] + example['output']
+    #     return example_new
+
+    # # only take a little samples for debug
+    # if training_args.debug:
+    #     print('Debug mode, only take a little samples for training and evaluation')
+    #     train_dataset = train_dataset.select(range(2000))
+    #     eval_dataset = eval_dataset.select(range(100))
+
+    # train_dataset = train_dataset.map(
+    #     preprocess_func,
+    #     num_proc=data_args.preprocessing_num_workers,
+    #     desc="Preprocessing training dataset",
+    # )
+    # eval_dataset = eval_dataset.map(
+    #     preprocess_func,
+    #     num_proc=data_args.preprocessing_num_workers,
+    #     desc="Preprocessing testing dataset",
+    # )
 
     with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
         # take a sample from the dataset (iteratable)
@@ -130,13 +158,16 @@ def main():
         response_template_id = tokenizer.convert_tokens_to_ids(['<eotp_i>'])
     else:
         response_template_id = tokenizer.convert_tokens_to_ids(['<eoa_i>'])
+    # response_template_id = tokenizer.convert_tokens_to_ids(['<boa_o>'])
 
     data_collator = DataCollatorForCompletionOnlyLM(response_template_id, tokenizer=tokenizer)
 
+    #######################
     # Load pretrained model
+    #######################
     logger.info("*** Load pretrained model ***")
-    # use float16 (V100 does not support bfloat16)
-    torch_dtype = torch.float16 if training_args.fp16 else torch.float32
+    # torch type (V100 does not support bfloat16)
+    torch_dtype = torch.float16 if training_args.fp16 else torch.bfloat16
 
     model_kwargs = dict(
         # revision=model_args.model_revision,
@@ -177,15 +208,34 @@ def main():
     if training_args.resume_from_checkpoint is not None:
         model = load_safetensors_weights(model, llm_checkpoint_path)
             
+    # model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=128) # pad to multiple of 128 to improve performance
+    
+    # freeze some layers
+    # for name, param in model.named_parameters():
+    #     print(f"Parameter name: {name}, requires_grad: {param.requires_grad}")
+    #     if 'embed_tokens' in name:
+    #         param.requires_grad = False
+    #     elif 'layers' in name:
+    #         name_split = name.split('.')
+    #         layer_id = int(name_split[2])
+    #         if layer_id <= 29:
+    #             param.requires_grad = False
+    # for name, param in model.named_parameters():
+    #     print(f"Parameter name: {name}, requires_grad: {param.requires_grad}")
+    ########################
     # Initialize the Trainer
+    ########################
+
     class PrintCallback(TrainerCallback):
         def on_evaluation(self, args: transformers.TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs):
             # print whether this process should save the checkpoint
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
-
-    # peft module
-    peft_config = LoraConfig(task_type=TaskType.SEQ_2_SEQ_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
-    model = get_peft_model(model, peft_config)
+    class PrintRequiresGradCallback(transformers.TrainerCallback):
+        def on_epoch_end(self, args, state, control, model=None, tokenizer=None, **kwargs):
+            # 打印所有参数的 requires_grad 状态
+            print(f"\nEpoch {state.epoch} --- Checking requires_grad status:")
+            for name, param in model.named_parameters():
+                print(f"Parameter name: {name}, requires_grad: {param.requires_grad}")
 
     trainer = SFTTrainer(
         model=model,
@@ -195,20 +245,27 @@ def main():
         tokenizer=tokenizer,
         dataset_text_field="text",
         data_collator=data_collator,
-        callbacks=[PrintCallback()] if training_args.debug else None,
+        callbacks=[PrintRequiresGradCallback()],
         max_seq_length=training_args.max_seq_length,
         dataset_num_proc=data_args.preprocessing_num_workers,
         dataset_kwargs=training_args.dataset_kwargs,
     )
 
-    """
-    Training loop
-    Check for last checkpoint
-    """
-    
+    ###############
+    # Training loop
+    ###############
+
+    # Check for last checkpoint
+    # last_checkpoint = get_checkpoint(training_args)
+    # if last_checkpoint is not None and training_args.resume_from_checkpoint is None:
+    #     logger.info(f"Checkpoint detected, resuming training at {last_checkpoint}.")
+
     logger.info("*** Train ***")
     checkpoint = None
-
+    # if training_args.resume_from_checkpoint is not None:
+    #     checkpoint = training_args.resume_from_checkpoint
+    # elif last_checkpoint is not None:
+    #     checkpoint = last_checkpoint
     train_result = trainer.train(resume_from_checkpoint=checkpoint)
     metrics = train_result.metrics
     metrics["train_samples"] = len(train_dataset)
@@ -216,12 +273,16 @@ def main():
     trainer.save_metrics("train", metrics)
     trainer.save_state()
 
+    ##################################
     # Save model and create model card
+    ##################################
     logger.info("*** Save model ***")
     trainer.save_model(training_args.output_dir)
     logger.info(f"Model saved to {training_args.output_dir}")
 
+    ##########
     # Evaluate
+    ##########
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate()
