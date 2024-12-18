@@ -6,7 +6,7 @@ use_flash_attention_2: false
 disable_auto_config: true
 model_type: mistral
 va_ncodes: 16384
-va_embedding_dim: 512
+va_embedding_dim: 1024
 va_checkpoint: /mnt/data-rundong/RobotVQ/1210-lr1e-6-8node-8v100-bs4-seqlen3-attn12-7actdec4-drop01-crop-kla-dim1024-imagenetnorm-imagegan-ganfeatloss02/checkpoints/step_checkpoint-step_30000.ckpt
 
 # Data training arguments
