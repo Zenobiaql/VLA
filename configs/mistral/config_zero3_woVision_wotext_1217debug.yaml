@@ -13,7 +13,7 @@ va_checkpoint: /mnt/data-rundong/RobotVQ/1210-lr1e-6-8node-8v100-bs4-seqlen3-att
 preprocessing_num_workers: 12
 # data_root: /mnt/data-rundong/robot_datasets/0531-action111-bridge-noMask-woResidual_tokenized_stacked/
 data_roots:
-  - /mnt/data-rundong/robot_datasets/1210-lr1e-6-8node-8v100-bs4-seqlen3-attn12-7actdec4-drop01-crop-kla-dim1024-imagenetnorm-imagegan-ganfeatloss02_step30000_tokenized_stacked_split/
+  - /mnt/data-rundong/robot_datasets/1210-lr1e-6-8node-8v100-bs4-seqlen3-attn12-7actdec4-drop01-crop-kla-dim1024-imagenetnorm-imagegan-ganfeatloss02_step30000_tokenized_stacked_split/pizza_width/
 
 padding_side: right
 num_visual_action_tokens: 16384
