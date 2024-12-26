@@ -181,7 +181,7 @@ def main():
             print(f'Process {args.local_rank} should save checkpoint: {args.should_save}')
 
     # peft module
-    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=64, lora_alpha=128, lora_dropout=0.1)
+    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=128, lora_alpha=64, lora_dropout=0.1)
     model = get_peft_model(model, peft_config)
 
     trainer = SFTTrainer(
