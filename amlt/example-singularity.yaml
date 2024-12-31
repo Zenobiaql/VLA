@@ -1,0 +1,55 @@
+description: This is an example configuration file for submitting jobs to Singularity
+env_defaults:
+  NODES: 1 # The number of nodes you want to use
+  GPUS: 8 # number of gpus per node
+  MEM: 40 # gpu memory of each gpu, not important
+
+target:
+  service: sing # for singularity, no need to change
+  workspace_name: wsgcrrbt # our workspace to use singularity, no need to change
+  name: msroctovc # change for different kinds of gpus. The detailed quota can be checked with command "amlt ti sing -v"
+
+storage: # mount the storage container
+  my_output:
+    storage_account_name: azsussc
+    container_name: v-rundongluo
+    mount_dir: /mnt/data-rundong
+  data:
+    storage_account_name: azsussc
+    container_name: robotdata
+    mount_dir: /mnt/robotdata
+    is_output: false
+
+environment: # select the image, clone your code, install the packages
+  image: base/job/pytorch/acpt-2.1.2-cuda11.8:20240320T154353549
+  setup:
+    - pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu118
+    - git clone https://github.com/CarefreeSun/vla.git && cd vla
+    - pip install -r requirements.txt
+  registry: singularitybase.azurecr.io # cached base images under amlt-sing/* seems not usable now, use singularitybase instead
+
+code:
+  local_dir: $CONFIG_DIR/
+
+data:
+  storage_id: my_output
+
+jobs:
+  - name: test # the job name you will see on the portal. Though not important, you'd better carefully set it for clarity.
+    sku: ${NODES}x${MEM}G${GPUS}-A100-IB # determinate the GPU you will use, please refer to the official docs for more information 
+    process_count_per_node: 1 # usually 1
+    sla_tier: Standard # Premium, Standard, Basic. corresponding to the priority.
+    execution_mode: basic
+    identity: managed
+    submit_args:
+      env:
+        AMLT_DOCKERFILE_TEMPLATE: default
+        _AZUREML_SINGULARITY_JOB_UAI: /subscriptions/3289a5dd-b901-4b63-9562-bbbdfffba9de/resourcegroups/ws/providers/Microsoft.ManagedIdentity/userAssignedIdentities/wsgcrrbt-identity
+        SHARED_MEMORY_PERCENT: 0.5 # value in [0,1], change if necessary, shared memory size
+
+    command:
+      - python -c "import time; time.sleep(14*24*60*60)" # sleep for two weeks
+      # Below is an example for distributed pytorch training. Arguments for torchrun are no need to change. 
+      # ATTENTION: DO NOT directly run this code since it will actually influence my resources. Change configs to make sure you "write" actions are only done in your storage container.
+      # - cd vla
+      # - torchrun --nproc_per_node=$GPUS --nnode=$NODES --node_rank=$$AZUREML_CR_NODE_RANK --master_addr=$$AZ_BATCHAI_JOB_MASTER_NODE_IP --master_port=9901  scripts/train.py configs/mistral/config_zero3_visionFirst_vaFeat.yaml
